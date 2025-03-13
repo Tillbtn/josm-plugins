@@ -74,10 +74,7 @@ public class TagDialog extends ExtendedDialog {
     private static final String TAG_ADDR_SUBURB = "addr:suburb";
 
     private static final String[] BUILDING_STRINGS = {
-        "yes", "apartments", "chapel", "church", "commercial", "dormitory", "hotel", "house", "residential", "terrace",
-        "industrial", "retail", "warehouse", "cathedral", "civic", "hospital", "school", "train_station", "transportation",
-        "university", "public", "bridge", "bunker", "cabin", "construction", "farm_auxiliary", "garage", "garages",
-        "greenhouse", "hangar", "hut", "roof", "shed", "stable"};
+            "yes", "apartments", "house", "residential", "detached"};
 
     private static final int FPS_MIN = -10;
     private static final int FPS_MAX = 10;
