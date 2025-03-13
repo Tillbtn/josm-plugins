@@ -64,6 +64,7 @@ public class TagDialog extends ExtendedDialog {
     private static final String TAG_STREET_OR_PLACE = tr("Use tag ''addr:street'' or ''addr:place''");
 
     private static final String TAG_BUILDING = "building";
+    private static final String TAG_HOUSE = "house";
     private static final String TAG_ADDR_COUNTRY = "addr:country";
     private static final String TAG_ADDR_STATE = "addr:state";
     private static final String TAG_ADDR_CITY = "addr:city";
@@ -93,6 +94,7 @@ public class TagDialog extends ExtendedDialog {
     private AutoCompComboBox<AutoCompletionItem> street;
     private JTextField housenumber;
     private JCheckBox buildingEnabled;
+    private JCheckBox houseEnabled;
     private JCheckBox countryEnabled;
     private JCheckBox stateEnabled;
     private JCheckBox cityEnabled;
@@ -102,6 +104,7 @@ public class TagDialog extends ExtendedDialog {
     private JCheckBox housenumberEnabled;
     private JSlider housenumberChangeSequence;
     private JComboBox<String> building;
+    private JTextField house;
     private JRadioButton streetRadio;
     private JRadioButton placeRadio;
 
@@ -176,6 +179,17 @@ public class TagDialog extends ExtendedDialog {
 
         editPanel.add(generateAcceptButton(actionEvent -> building.setSelectedItem(selection.get(TAG_BUILDING))), columnThree);
         editPanel.add(generateTextField(selection.get(TAG_BUILDING)), columnFour);
+
+        // house
+        houseEnabled = generateCheckbox(TAG_HOUSE, dto.isSaveHouse());
+        editPanel.add(houseEnabled, columnOne);
+
+        house = generateTextField(dto.getHouse());
+        house.setEditable(true);
+        editPanel.add(house, columnTwo);
+
+        editPanel.add(generateAcceptButton(actionEvent -> house.setText(selection.get(TAG_HOUSE))), columnThree);
+        editPanel.add(generateTextField(selection.get(TAG_HOUSE)), columnFour);
 
         // country
         countryEnabled = generateCheckbox(TAG_ADDR_COUNTRY, dto.isSaveCountry());
@@ -341,7 +355,7 @@ public class TagDialog extends ExtendedDialog {
     private void acceptAllExistingValues() {
         updateStreetOrPlaceValues();
         building.setSelectedItem(selection.get(TAG_BUILDING));
-        source.setSelectedItem(selection.get(TAG_SOURCE));
+        house.setText(selection.get(TAG_HOUSE));
         country.setSelectedItem(selection.get(TAG_ADDR_COUNTRY));
         stateTag.setSelectedItem(selection.get(TAG_ADDR_STATE));
         suburb.setSelectedItem(selection.get(TAG_ADDR_SUBURB));
@@ -385,6 +399,7 @@ public class TagDialog extends ExtendedDialog {
         if (buttonIndex == 0) {
             Dto dto = new Dto();
             dto.setSaveBuilding(buildingEnabled.isSelected());
+            dto.setSaveHouse(houseEnabled.isSelected());
             dto.setSaveCity(cityEnabled.isSelected());
             dto.setSaveCountry(countryEnabled.isSelected());
             dto.setSaveState(stateEnabled.isSelected());
@@ -395,6 +410,7 @@ public class TagDialog extends ExtendedDialog {
             dto.setSaveSuburb(suburbEnabled.isSelected());
 
             dto.setBuilding((String) building.getSelectedItem());
+            dto.setHouse(house.getText());
             dto.setCity(getAutoCompletingComboBoxValue(city));
             dto.setCountry(getAutoCompletingComboBoxValue(country));
             dto.setHousenumber(housenumber.getText());
@@ -452,6 +468,14 @@ public class TagDialog extends ExtendedDialog {
             String value = selection.get(TagDialog.TAG_BUILDING);
             if (value == null || !value.equals(dto.getBuilding())) {
                 ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_BUILDING, dto.getBuilding());
+                commands.add(command);
+            }
+        }
+
+        if (dto.isSaveHouse()) {
+            String value = selection.get(TagDialog.TAG_HOUSE);
+            if (value == null || !value.equals(dto.getHouse())) {
+                ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_HOUSE, dto.getHouse());
                 commands.add(command);
             }
         }
@@ -583,6 +607,7 @@ public class TagDialog extends ExtendedDialog {
     }
 
     private void loadExistingValuesToDto(Dto dto) {
+        dto.setHouse(selection.get(TagDialog.TAG_HOUSE));
         dto.setCity(selection.get(TagDialog.TAG_ADDR_CITY));
         dto.setCountry(selection.get(TagDialog.TAG_ADDR_COUNTRY));
         dto.setHousenumber(selection.get(TagDialog.TAG_ADDR_HOUSENUMBER));

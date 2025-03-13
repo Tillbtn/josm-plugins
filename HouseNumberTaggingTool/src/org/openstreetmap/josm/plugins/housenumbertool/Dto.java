@@ -12,6 +12,7 @@ public class Dto implements Serializable {
     private static final long serialVersionUID = 7719940860196679722L;
 
     private boolean saveBuilding = true;
+    private boolean saveHouse = false;
     private boolean saveCountry = true;
     private boolean saveState = true;
     private boolean saveCity = true;
@@ -23,6 +24,7 @@ public class Dto implements Serializable {
     private boolean tagStreet = true; // use tag addr:street or addr:place
    
     private String building = "yes";
+    private String house = "terraced";
     private String country;
     private String state;
     private String city;
@@ -40,6 +42,10 @@ public class Dto implements Serializable {
     public void setSaveBuilding(boolean saveBuilding) {
         this.saveBuilding = saveBuilding;
     }
+
+    public boolean isSaveHouse() { return saveHouse; }
+
+    public void setSaveHouse(boolean saveHouse) { this.saveHouse = saveHouse; }
 
     public boolean isSaveCountry() {
         return saveCountry;
@@ -152,6 +158,10 @@ public class Dto implements Serializable {
     public void setBuilding(String building) {
         this.building = building;
     }
+
+    public String getHouse() { return house; }
+
+    public void setHouse(String house) { this.house = house; }
 
     public boolean isTagStreet() {
         return tagStreet;
