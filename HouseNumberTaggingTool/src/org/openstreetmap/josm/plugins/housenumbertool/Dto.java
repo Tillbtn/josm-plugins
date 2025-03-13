@@ -13,6 +13,7 @@ public class Dto implements Serializable {
 
     private boolean saveBuilding = true;
     private boolean saveHouse = false;
+    private boolean saveEntrance = true;
     private boolean saveCountry = true;
     private boolean saveState = true;
     private boolean saveCity = true;
@@ -25,6 +26,7 @@ public class Dto implements Serializable {
    
     private String building = "yes";
     private String house = "terraced";
+    private String entrance = "yes";
     private String country;
     private String state;
     private String city;
@@ -46,6 +48,14 @@ public class Dto implements Serializable {
     public boolean isSaveHouse() { return saveHouse; }
 
     public void setSaveHouse(boolean saveHouse) { this.saveHouse = saveHouse; }
+
+    public boolean isSaveEntrance() {
+        return saveEntrance;
+    }
+
+    public void setSaveEntrance(boolean saveEntrance) {
+        this.saveEntrance = saveEntrance;
+    }
 
     public boolean isSaveCountry() {
         return saveCountry;
@@ -162,6 +172,10 @@ public class Dto implements Serializable {
     public String getHouse() { return house; }
 
     public void setHouse(String house) { this.house = house; }
+
+    public String getEntrance() { return entrance; }
+
+    public void setEntrance(String entrance) { this.entrance = entrance; }
 
     public boolean isTagStreet() {
         return tagStreet;

@@ -65,6 +65,7 @@ public class TagDialog extends ExtendedDialog {
 
     private static final String TAG_BUILDING = "building";
     private static final String TAG_HOUSE = "house";
+    private static final String TAG_ENTRANCE = "entrance";
     private static final String TAG_ADDR_COUNTRY = "addr:country";
     private static final String TAG_ADDR_STATE = "addr:state";
     private static final String TAG_ADDR_CITY = "addr:city";
@@ -76,6 +77,9 @@ public class TagDialog extends ExtendedDialog {
 
     private static final String[] BUILDING_STRINGS = {
             "yes", "apartments", "house", "residential", "detached"};
+
+    private static final String[] ENTRANCE_STRINGS = {
+            "yes", "main", "shop", "home", "exit"};
 
     private static final int FPS_MIN = -10;
     private static final int FPS_MAX = 10;
@@ -95,6 +99,7 @@ public class TagDialog extends ExtendedDialog {
     private JTextField housenumber;
     private JCheckBox buildingEnabled;
     private JCheckBox houseEnabled;
+    private JCheckBox entranceEnabled;
     private JCheckBox countryEnabled;
     private JCheckBox stateEnabled;
     private JCheckBox cityEnabled;
@@ -105,6 +110,7 @@ public class TagDialog extends ExtendedDialog {
     private JSlider housenumberChangeSequence;
     private JComboBox<String> building;
     private JTextField house;
+    private JComboBox<String> entrance;
     private JRadioButton streetRadio;
     private JRadioButton placeRadio;
 
@@ -190,6 +196,17 @@ public class TagDialog extends ExtendedDialog {
 
         editPanel.add(generateAcceptButton(actionEvent -> house.setText(selection.get(TAG_HOUSE))), columnThree);
         editPanel.add(generateTextField(selection.get(TAG_HOUSE)), columnFour);
+
+        // entrance
+        entranceEnabled = generateCheckbox(TAG_ENTRANCE, dto.isSaveEntrance());
+        editPanel.add(entranceEnabled, columnOne);
+
+        entrance = new JosmComboBox<>(ENTRANCE_STRINGS);
+        entrance.setSelectedItem(dto.getEntrance());
+        editPanel.add(entrance, columnTwo);
+
+        editPanel.add(generateAcceptButton(actionEvent -> entrance.setSelectedItem(selection.get(TAG_ENTRANCE))), columnThree);
+        editPanel.add(generateTextField(selection.get(TAG_ENTRANCE)), columnFour);
 
         // country
         countryEnabled = generateCheckbox(TAG_ADDR_COUNTRY, dto.isSaveCountry());
@@ -356,6 +373,7 @@ public class TagDialog extends ExtendedDialog {
         updateStreetOrPlaceValues();
         building.setSelectedItem(selection.get(TAG_BUILDING));
         house.setText(selection.get(TAG_HOUSE));
+        entrance.setSelectedItem(selection.get(TAG_ENTRANCE));
         country.setSelectedItem(selection.get(TAG_ADDR_COUNTRY));
         stateTag.setSelectedItem(selection.get(TAG_ADDR_STATE));
         suburb.setSelectedItem(selection.get(TAG_ADDR_SUBURB));
@@ -400,6 +418,7 @@ public class TagDialog extends ExtendedDialog {
             Dto dto = new Dto();
             dto.setSaveBuilding(buildingEnabled.isSelected());
             dto.setSaveHouse(houseEnabled.isSelected());
+            dto.setSaveEntrance(entranceEnabled.isSelected());
             dto.setSaveCity(cityEnabled.isSelected());
             dto.setSaveCountry(countryEnabled.isSelected());
             dto.setSaveState(stateEnabled.isSelected());
@@ -411,6 +430,7 @@ public class TagDialog extends ExtendedDialog {
 
             dto.setBuilding((String) building.getSelectedItem());
             dto.setHouse(house.getText());
+            dto.setEntrance((String) entrance.getSelectedItem());
             dto.setCity(getAutoCompletingComboBoxValue(city));
             dto.setCountry(getAutoCompletingComboBoxValue(country));
             dto.setHousenumber(housenumber.getText());
@@ -476,6 +496,14 @@ public class TagDialog extends ExtendedDialog {
             String value = selection.get(TagDialog.TAG_HOUSE);
             if (value == null || !value.equals(dto.getHouse())) {
                 ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_HOUSE, dto.getHouse());
+                commands.add(command);
+            }
+        }
+
+        if (dto.isSaveEntrance()) {
+            String value = selection.get(TagDialog.TAG_ENTRANCE);
+            if (value == null || !value.equals(dto.getEntrance())) {
+                ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_ENTRANCE, dto.getEntrance());
                 commands.add(command);
             }
         }
