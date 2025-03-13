@@ -64,7 +64,6 @@ public class TagDialog extends ExtendedDialog {
     private static final String TAG_STREET_OR_PLACE = tr("Use tag ''addr:street'' or ''addr:place''");
 
     private static final String TAG_BUILDING = "building";
-    private static final String TAG_SOURCE = "source";
     private static final String TAG_ADDR_COUNTRY = "addr:country";
     private static final String TAG_ADDR_STATE = "addr:state";
     private static final String TAG_ADDR_CITY = "addr:city";
@@ -89,7 +88,6 @@ public class TagDialog extends ExtendedDialog {
 
     private static final String TEMPLATE_DATA = "/template.data";
 
-    private AutoCompComboBox<AutoCompletionItem> source;
     private AutoCompComboBox<AutoCompletionItem> country;
     private AutoCompComboBox<AutoCompletionItem> stateTag;
     private AutoCompComboBox<AutoCompletionItem> suburb;
@@ -98,7 +96,6 @@ public class TagDialog extends ExtendedDialog {
     private AutoCompComboBox<AutoCompletionItem> street;
     private JTextField housenumber;
     private JCheckBox buildingEnabled;
-    private JCheckBox sourceEnabled;
     private JCheckBox countryEnabled;
     private JCheckBox stateEnabled;
     private JCheckBox cityEnabled;
@@ -182,16 +179,6 @@ public class TagDialog extends ExtendedDialog {
 
         editPanel.add(generateAcceptButton(actionEvent -> building.setSelectedItem(selection.get(TAG_BUILDING))), columnThree);
         editPanel.add(generateTextField(selection.get(TAG_BUILDING)), columnFour);
-
-        // source
-        sourceEnabled = generateCheckbox(TAG_SOURCE, dto.isSaveSource());
-        editPanel.add(sourceEnabled, columnOne);
-
-        source = generateAutoCompTextField(acm.getTagValues(TAG_SOURCE), dto.getSource());
-        editPanel.add(source, columnTwo);
-
-        editPanel.add(generateAcceptButton(actionEvent -> source.setSelectedItem(selection.get(TAG_SOURCE))), columnThree);
-        editPanel.add(generateTextField(selection.get(TAG_SOURCE)), columnFour);
 
         // country
         countryEnabled = generateCheckbox(TAG_ADDR_COUNTRY, dto.isSaveCountry());
@@ -401,7 +388,6 @@ public class TagDialog extends ExtendedDialog {
         if (buttonIndex == 0) {
             Dto dto = new Dto();
             dto.setSaveBuilding(buildingEnabled.isSelected());
-            dto.setSaveSource(sourceEnabled.isSelected());
             dto.setSaveCity(cityEnabled.isSelected());
             dto.setSaveCountry(countryEnabled.isSelected());
             dto.setSaveState(stateEnabled.isSelected());
@@ -412,7 +398,6 @@ public class TagDialog extends ExtendedDialog {
             dto.setSaveSuburb(suburbEnabled.isSelected());
 
             dto.setBuilding((String) building.getSelectedItem());
-            dto.setSource(getAutoCompletingComboBoxValue(source));
             dto.setCity(getAutoCompletingComboBoxValue(city));
             dto.setCountry(getAutoCompletingComboBoxValue(country));
             dto.setHousenumber(housenumber.getText());
@@ -470,14 +455,6 @@ public class TagDialog extends ExtendedDialog {
             String value = selection.get(TagDialog.TAG_BUILDING);
             if (value == null || !value.equals(dto.getBuilding())) {
                 ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_BUILDING, dto.getBuilding());
-                commands.add(command);
-            }
-        }
-
-        if (dto.isSaveSource()) {
-            String value = selection.get(TagDialog.TAG_SOURCE);
-            if (value == null || !value.equals(dto.getSource())) {
-                ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_SOURCE, dto.getSource());
                 commands.add(command);
             }
         }
@@ -611,7 +588,6 @@ public class TagDialog extends ExtendedDialog {
     private void loadExistingValuesToDto(Dto dto) {
         dto.setCity(selection.get(TagDialog.TAG_ADDR_CITY));
         dto.setCountry(selection.get(TagDialog.TAG_ADDR_COUNTRY));
-        dto.setSource(selection.get(TagDialog.TAG_SOURCE));
         dto.setHousenumber(selection.get(TagDialog.TAG_ADDR_HOUSENUMBER));
         dto.setPostcode(selection.get(TagDialog.TAG_ADDR_POSTCODE));
         dto.setStreet(selection.get(TagDialog.TAG_ADDR_STREET));
