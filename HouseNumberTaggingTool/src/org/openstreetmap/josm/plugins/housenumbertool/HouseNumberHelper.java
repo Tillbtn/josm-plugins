@@ -20,15 +20,29 @@ public final class HouseNumberHelper {
      * @param increment The amount to increment the number by
      * @return The incremented number
      */
-    public static String incrementHouseNumber(String number, int increment) {
+    public static String incrementHouseNumber(String number, int increment, boolean incrementNum) {
         if (number != null) {
             try {
                 Matcher m = Pattern.compile("([^\\pN]+)?(\\pN+)([^\\pN]+)?").matcher(number);
                 if (m.matches()) {
-                    String prefix = m.group(1) != null ? m.group(1) : "";
-                    int n = Integer.parseInt(m.group(2)) + increment;
-                    String suffix = m.group(3) != null ? m.group(3) : "";
-                    return prefix + n + suffix;
+                    if (incrementNum) {
+                        String prefix = m.group(1) != null ? m.group(1) : "";
+                        int n = Integer.parseInt(m.group(2)) + increment;
+                        String suffix = m.group(3) != null ? m.group(3) : "";
+                        return prefix + n + suffix;
+                    }
+                    else {
+                        // increment letter
+                        String prefix = m.group(1) != null ? m.group(1) : "";
+                        int n = Integer.parseInt(m.group(2));
+                        String suffix = m.group(3) != null ? m.group(3) : "";
+                        if (suffix == "") suffix = "a";
+                        else {
+                            int charValue = suffix.charAt(0) ;
+                            suffix = String.valueOf( (char) (charValue + 1));
+                        }
+                        return prefix + n + suffix;
+                    }
                 }
             } catch (NumberFormatException e) {
                 Logging.trace(e);

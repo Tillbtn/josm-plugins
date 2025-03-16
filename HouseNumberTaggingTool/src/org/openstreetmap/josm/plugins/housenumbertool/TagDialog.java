@@ -4,10 +4,7 @@ package org.openstreetmap.josm.plugins.housenumbertool;
 import static org.openstreetmap.josm.tools.I18n.tr;
 import static org.openstreetmap.josm.tools.I18n.trn;
 
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -25,16 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JSlider;
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import org.openstreetmap.josm.command.ChangePropertyCommand;
 import org.openstreetmap.josm.command.Command;
@@ -74,6 +62,8 @@ public class TagDialog extends ExtendedDialog {
     private static final String TAG_ADDR_STREET = "addr:street";
     private static final String TAG_ADDR_PLACE = "addr:place";
     private static final String TAG_ADDR_SUBURB = "addr:suburb";
+    private static final String TAG_INCREMENT_NUMBER = "increment number";
+    private static final String TAG_INCREMENT_LETTER = "increment letter";
 
     private static final String[] BUILDING_STRINGS = {
             "yes", "apartments", "house", "residential", "detached"};
@@ -113,6 +103,8 @@ public class TagDialog extends ExtendedDialog {
     private JComboBox<String> entrance;
     private JRadioButton streetRadio;
     private JRadioButton placeRadio;
+    private JRadioButton incrementNumRadio;
+    private JRadioButton incrementLetterRadio;
 
     /**
      * Constructs a new {@code TagDialog}.
@@ -298,7 +290,7 @@ public class TagDialog extends ExtendedDialog {
         housenumberEnabled = generateCheckbox(TAG_ADDR_HOUSENUMBER, dto.isSaveHousenumber());
         editPanel.add(housenumberEnabled, columnOne);
 
-        housenumber = generateTextField(HouseNumberHelper.incrementHouseNumber(dto.getHousenumber(), dto.getHousenumberChangeValue()));
+        housenumber = generateTextField(HouseNumberHelper.incrementHouseNumber(dto.getHousenumber(), dto.getHousenumberChangeValue(), dto.isIncrementNum()));
         housenumber.setEditable(true);
 
         editPanel.add(housenumber, columnTwo);
@@ -306,7 +298,30 @@ public class TagDialog extends ExtendedDialog {
         editPanel.add(generateAcceptButton(actionEvent -> housenumber.setText(selection.get(TAG_ADDR_HOUSENUMBER))), columnThree);
         editPanel.add(generateTextField(selection.get(TAG_ADDR_HOUSENUMBER)), columnFour);
 
-        // increment
+        // increment number or letter?
+        incrementNumRadio = new JRadioButton(TAG_INCREMENT_NUMBER);
+        incrementNumRadio.setToolTipText("increment number");
+        incrementNumRadio.setSelected(dto.isIncrementNum());
+        incrementNumRadio.addItemListener(new RadioChangeListener());
+        // editPanel.add(incrementNumRadio, GBC.std().weight(0, 0).insets(250, 5, 0, 5));
+
+        incrementLetterRadio = new JRadioButton(TAG_INCREMENT_LETTER);
+        incrementLetterRadio.setToolTipText("increment letter: supports 'a', 'A'");
+        incrementLetterRadio.setSelected(!dto.isIncrementNum());
+        incrementLetterRadio.addItemListener(new RadioChangeListener());
+        // editPanel.add(incrementLetterRadio, GBC.std().insets(5, 5, 0, 5));
+
+        // add buttons with placeholders
+        editPanel.add(Box.createHorizontalGlue(), GBC.std().weight(1, 0).fill(GBC.HORIZONTAL));
+        editPanel.add(incrementNumRadio, GBC.std().insets(5, 5, 0, 5));
+        editPanel.add(incrementLetterRadio, GBC.std().insets(5, 5, 0, 5));
+        editPanel.add(Box.createHorizontalGlue(), GBC.eol().weight(1, 0).fill(GBC.HORIZONTAL));
+
+        ButtonGroup g2 = new ButtonGroup();
+        g2.add(incrementNumRadio);
+        g2.add(incrementLetterRadio);
+
+        // increment number
         JLabel seqLabel = new JLabel(tr("House number increment:"));
         editPanel.add(seqLabel, columnOne);
 
@@ -371,6 +386,7 @@ public class TagDialog extends ExtendedDialog {
 
     private void acceptAllExistingValues() {
         updateStreetOrPlaceValues();
+        updateIncrementNumOrLetter();
         building.setSelectedItem(selection.get(TAG_BUILDING));
         house.setText(selection.get(TAG_HOUSE));
         entrance.setSelectedItem(selection.get(TAG_ENTRANCE));
@@ -412,6 +428,14 @@ public class TagDialog extends ExtendedDialog {
         }
     }
 
+    private void updateIncrementNumOrLetter() {
+        if (loadDto().isIncrementNum()) {
+            incrementNumRadio.setSelected(true);
+        } else {
+            incrementLetterRadio.setSelected(true);
+        }
+    }
+
     @Override
     protected void buttonAction(int buttonIndex, ActionEvent evt) {
         if (buttonIndex == 0) {
@@ -427,6 +451,7 @@ public class TagDialog extends ExtendedDialog {
             dto.setSaveStreet(streetEnabled.isSelected());
             dto.setTagStreet(streetRadio.isSelected());
             dto.setSaveSuburb(suburbEnabled.isSelected());
+            dto.setIncrementNum(incrementNumRadio.isSelected());
 
             dto.setBuilding((String) building.getSelectedItem());
             dto.setHouse(house.getText());

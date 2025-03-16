@@ -23,6 +23,8 @@ public class Dto implements Serializable {
     private boolean saveHousenumber = true;
 
     private boolean tagStreet = true; // use tag addr:street or addr:place
+    private boolean incrementNum = false; // increment numbers or letters
+        // setting it to false only affects first start - idk why it has to be false to select incrementNum
    
     private String building = "yes";
     private String house = "terraced";
@@ -184,6 +186,10 @@ public class Dto implements Serializable {
     public void setTagStreet(boolean tagStreet) {
         this.tagStreet = tagStreet;
     }
+
+    public boolean isIncrementNum() { return incrementNum; }
+
+    public void setIncrementNum(boolean incrementNum) { this.incrementNum = incrementNum; }
 
     public String getPlace() {
         return place;
