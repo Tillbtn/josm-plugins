@@ -293,7 +293,7 @@ public class TagDialog extends ExtendedDialog {
         // editPanel.add(incrementNumRadio, GBC.std().weight(0, 0).insets(250, 5, 0, 5));
 
         incrementLetterRadio = new JRadioButton(TAG_INCREMENT_LETTER);
-        incrementLetterRadio.setToolTipText("increment letter: supports 'a', 'A'");
+        incrementLetterRadio.setToolTipText("supports 'a', 'A', '-a', '/A', '-1', '/1'");
         incrementLetterRadio.setSelected(!dto.isIncrementNum());
         incrementLetterRadio.addItemListener(new RadioChangeListener());
         // editPanel.add(incrementLetterRadio, GBC.std().insets(5, 5, 0, 5));

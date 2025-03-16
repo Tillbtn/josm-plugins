@@ -23,25 +23,38 @@ public final class HouseNumberHelper {
     public static String incrementHouseNumber(String number, int increment, boolean incrementNum) {
         if (number != null) {
             try {
-                Matcher m = Pattern.compile("([^\\pN]+)?(\\pN+)([^\\pN]+)?").matcher(number);
+                Matcher m = Pattern.compile("([^\\pN]+)?(\\pN+)([-/])?([^\\pN]+)?(\\pN+)?").matcher(number);
                 if (m.matches()) {
                     if (incrementNum) {
                         String prefix = m.group(1) != null ? m.group(1) : "";
                         int n = Integer.parseInt(m.group(2)) + increment;
-                        String suffix = m.group(3) != null ? m.group(3) : "";
-                        return prefix + n + suffix;
+                        String preSuffix = m.group(3) != null ? m.group(3) : "";
+                        String suffixLetter = m.group(4) != null ? m.group(4) : "";
+                        String suffixNum = m.group(5) != null ? m.group(5) : "";
+                        return prefix + n + preSuffix + suffixLetter + suffixNum;
                     }
-                    else {
-                        // increment letter
+                    else { // increment letter
                         String prefix = m.group(1) != null ? m.group(1) : "";
                         int n = Integer.parseInt(m.group(2));
-                        String suffix = m.group(3) != null ? m.group(3) : "";
-                        if (suffix.isEmpty()) suffix = "a";
-                        else {
-                            int charValue = suffix.charAt(0) ;
-                            suffix = String.valueOf( (char) (charValue + 1));
+                        // optional separator
+                        String preSuffix = m.group(3) != null ? m.group(3) : "";
+                        // optional letter
+                        String suffixLetter = m.group(4) != null ? m.group(4) : "";
+                        // optional number
+                        String suffixNum = m.group(5) != null ? m.group(5) : "";
+                        // optional letter: set to 'a' if there is no suffix yet
+                        if (suffixLetter.isEmpty() && suffixNum.isEmpty()) suffixLetter = "a";
+                        else if (!suffixLetter.isEmpty()){
+                            int charValue = suffixLetter.charAt(0) ;
+                            suffixLetter = String.valueOf( (char) (charValue + 1));
                         }
-                        return prefix + n + suffix;
+                        // optional number (should only exist if there is a separator and no letter)
+                        if (!suffixNum.isEmpty()){
+                            int newNum = Integer.parseInt(suffixNum);
+                            newNum ++;
+                            suffixNum = Integer.toString(newNum);
+                        }
+                        return prefix + n + preSuffix + suffixLetter + suffixNum;
                     }
                 }
             } catch (NumberFormatException e) {
