@@ -32,7 +32,6 @@ public class Dto implements Serializable {
     private String suburb;
     private String postcode;
     private String street;
-    private String place;
     private String housenumber;
     private int housenumberChangeValue = 0;
 
