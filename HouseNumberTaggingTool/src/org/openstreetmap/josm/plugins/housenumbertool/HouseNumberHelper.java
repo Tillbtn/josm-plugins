@@ -36,7 +36,7 @@ public final class HouseNumberHelper {
                         String prefix = m.group(1) != null ? m.group(1) : "";
                         int n = Integer.parseInt(m.group(2));
                         String suffix = m.group(3) != null ? m.group(3) : "";
-                        if (suffix.equals("")) suffix = "a";
+                        if (suffix.isEmpty()) suffix = "a";
                         else {
                             int charValue = suffix.charAt(0) ;
                             suffix = String.valueOf( (char) (charValue + 1));
