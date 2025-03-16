@@ -55,7 +55,6 @@ public class TagDialog extends ExtendedDialog {
     private static final String TAG_HOUSE = "house";
     private static final String TAG_ENTRANCE = "entrance";
     private static final String TAG_ADDR_COUNTRY = "addr:country";
-    private static final String TAG_ADDR_STATE = "addr:state";
     private static final String TAG_ADDR_CITY = "addr:city";
     private static final String TAG_ADDR_POSTCODE = "addr:postcode";
     private static final String TAG_ADDR_HOUSENUMBER = "addr:housenumber";
@@ -81,7 +80,6 @@ public class TagDialog extends ExtendedDialog {
     private static final String TEMPLATE_DATA = "/template.data";
 
     private AutoCompComboBox<AutoCompletionItem> country;
-    private AutoCompComboBox<AutoCompletionItem> stateTag;
     private AutoCompComboBox<AutoCompletionItem> suburb;
     private AutoCompComboBox<AutoCompletionItem> city;
     private AutoCompComboBox<AutoCompletionItem> postcode;
@@ -91,7 +89,6 @@ public class TagDialog extends ExtendedDialog {
     private JCheckBox houseEnabled;
     private JCheckBox entranceEnabled;
     private JCheckBox countryEnabled;
-    private JCheckBox stateEnabled;
     private JCheckBox cityEnabled;
     private JCheckBox suburbEnabled;
     private JCheckBox zipEnabled;
@@ -209,16 +206,6 @@ public class TagDialog extends ExtendedDialog {
 
         editPanel.add(generateAcceptButton(actionEvent -> country.setSelectedItem(selection.get(TAG_ADDR_COUNTRY))), columnThree);
         editPanel.add(generateTextField(selection.get(TAG_ADDR_COUNTRY)), columnFour);
-
-        // state
-        stateEnabled = generateCheckbox(TAG_ADDR_STATE, dto.isSaveState());
-        editPanel.add(stateEnabled, columnOne);
-
-        stateTag = generateAutoCompTextField(acm.getTagValues(TAG_ADDR_STATE), dto.getState());
-        editPanel.add(stateTag, columnTwo);
-
-        editPanel.add(generateAcceptButton(actionEvent -> stateTag.setSelectedItem(selection.get(TAG_ADDR_STATE))), columnThree);
-        editPanel.add(generateTextField(selection.get(TAG_ADDR_STATE)), columnFour);
 
         // suburb
         suburbEnabled = generateCheckbox(TAG_ADDR_SUBURB, dto.isSaveSuburb());
@@ -391,7 +378,6 @@ public class TagDialog extends ExtendedDialog {
         house.setText(selection.get(TAG_HOUSE));
         entrance.setSelectedItem(selection.get(TAG_ENTRANCE));
         country.setSelectedItem(selection.get(TAG_ADDR_COUNTRY));
-        stateTag.setSelectedItem(selection.get(TAG_ADDR_STATE));
         suburb.setSelectedItem(selection.get(TAG_ADDR_SUBURB));
         city.setSelectedItem(selection.get(TAG_ADDR_CITY));
         postcode.setSelectedItem(selection.get(TAG_ADDR_POSTCODE));
@@ -445,7 +431,6 @@ public class TagDialog extends ExtendedDialog {
             dto.setSaveEntrance(entranceEnabled.isSelected());
             dto.setSaveCity(cityEnabled.isSelected());
             dto.setSaveCountry(countryEnabled.isSelected());
-            dto.setSaveState(stateEnabled.isSelected());
             dto.setSaveHousenumber(housenumberEnabled.isSelected());
             dto.setSavePostcode(zipEnabled.isSelected());
             dto.setSaveStreet(streetEnabled.isSelected());
@@ -461,7 +446,6 @@ public class TagDialog extends ExtendedDialog {
             dto.setHousenumber(housenumber.getText());
             dto.setPostcode(getAutoCompletingComboBoxValue(postcode));
             dto.setStreet(getAutoCompletingComboBoxValue(street));
-            dto.setState(getAutoCompletingComboBoxValue(stateTag));
             dto.setSuburb(getAutoCompletingComboBoxValue(suburb));
             dto.setHousenumberChangeValue(housenumberChangeSequence.getValue());
 
@@ -601,14 +585,6 @@ public class TagDialog extends ExtendedDialog {
             }
         }
 
-        if (dto.isSaveState()) {
-            String value = selection.get(TagDialog.TAG_ADDR_STATE);
-            if (value == null || !value.equals(dto.getState())) {
-                ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_ADDR_STATE, dto.getState());
-                commands.add(command);
-            }
-        }
-
         if (!commands.isEmpty()) {
             SequenceCommand sequenceCommand = new SequenceCommand(
                  trn("Updating properties of up to {0} object",
@@ -666,7 +642,6 @@ public class TagDialog extends ExtendedDialog {
         dto.setHousenumber(selection.get(TagDialog.TAG_ADDR_HOUSENUMBER));
         dto.setPostcode(selection.get(TagDialog.TAG_ADDR_POSTCODE));
         dto.setStreet(selection.get(TagDialog.TAG_ADDR_STREET));
-        dto.setState(selection.get(TagDialog.TAG_ADDR_STATE));
         dto.setSuburb(selection.get(TagDialog.TAG_ADDR_SUBURB));
     }
 

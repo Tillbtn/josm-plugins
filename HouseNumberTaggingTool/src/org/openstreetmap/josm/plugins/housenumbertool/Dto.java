@@ -15,7 +15,6 @@ public class Dto implements Serializable {
     private boolean saveHouse = false;
     private boolean saveEntrance = true;
     private boolean saveCountry = true;
-    private boolean saveState = true;
     private boolean saveCity = true;
     private boolean saveSuburb = true;
     private boolean savePostcode = true;
@@ -23,14 +22,12 @@ public class Dto implements Serializable {
     private boolean saveHousenumber = true;
 
     private boolean tagStreet = true; // use tag addr:street or addr:place
-    private boolean incrementNum = false; // increment numbers or letters
-        // setting it to false only affects first start - idk why it has to be false to select incrementNum
+    private boolean incrementNum = true; // increment numbers or letters
    
     private String building = "yes";
     private String house = "terraced";
     private String entrance = "yes";
     private String country;
-    private String state;
     private String city;
     private String suburb;
     private String postcode;
@@ -139,22 +136,6 @@ public class Dto implements Serializable {
         this.housenumber = housenumber;
     }
 
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public boolean isSaveState() {
-        return saveState;
-    }
-
-    public void setSaveState(boolean saveState) {
-        this.saveState = saveState;
-    }
-
     public int getHousenumberChangeValue() {
         return housenumberChangeValue;
     }
@@ -190,14 +171,6 @@ public class Dto implements Serializable {
     public boolean isIncrementNum() { return incrementNum; }
 
     public void setIncrementNum(boolean incrementNum) { this.incrementNum = incrementNum; }
-
-    public String getPlace() {
-        return place;
-    }
-
-    public void setPlace(String place) {
-        this.place = place;
-    }
 
     public boolean isSaveSuburb() {
         return saveSuburb;
