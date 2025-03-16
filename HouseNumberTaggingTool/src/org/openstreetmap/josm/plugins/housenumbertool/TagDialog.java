@@ -118,8 +118,8 @@ public class TagDialog extends ExtendedDialog {
 
         JPanel editPanel = createContentPane();
 
-        setPreferredSize(new Dimension(900, 500));
-        setMinimumSize(new Dimension(900, 500));
+        setPreferredSize(new Dimension(900, 600)); // changed from 900;500
+        setMinimumSize(new Dimension(900, 600));
 
         setContent(editPanel);
         setButtonIcons("ok", "cancel");
