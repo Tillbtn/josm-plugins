@@ -23,7 +23,7 @@ public final class HouseNumberHelper {
     public static String incrementHouseNumber(String number, int increment, boolean incrementNum) {
         if (number != null) {
             try {
-                Matcher m = Pattern.compile("([^\\pN]+)?(\\pN+)([-/])?([^\\pN]+)?(\\pN+)?").matcher(number);
+                Matcher m = Pattern.compile("([^\\pN]+)?(\\pN+)([-/ ])?([^\\pN]+)?(\\pN+)?").matcher(number);
                 if (m.matches()) {
                     if (incrementNum) {
                         String prefix = m.group(1) != null ? m.group(1) : "";

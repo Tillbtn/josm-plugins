@@ -61,11 +61,11 @@ public class TagDialog extends ExtendedDialog {
     private static final String TAG_ADDR_STREET = "addr:street";
     private static final String TAG_ADDR_PLACE = "addr:place";
     private static final String TAG_ADDR_SUBURB = "addr:suburb";
-    private static final String TAG_INCREMENT_NUMBER = "increment number";
-    private static final String TAG_INCREMENT_LETTER = "increment letter";
+    private static final String TAG_INCREMENT_NUMBER = tr("increment number");
+    private static final String TAG_INCREMENT_LETTER = tr("increment letter");
 
     private static final String[] BUILDING_STRINGS = {
-            "yes", "apartments", "house", "residential", "detached"};
+            "yes", "apartments", "house", "semidetached_house", "residential", "detached"};
 
     private static final String[] ENTRANCE_STRINGS = {
             "yes", "main", "shop", "home", "exit"};
@@ -287,13 +287,13 @@ public class TagDialog extends ExtendedDialog {
 
         // increment number or letter?
         incrementNumRadio = new JRadioButton(TAG_INCREMENT_NUMBER);
-        incrementNumRadio.setToolTipText("increment number");
+        incrementNumRadio.setToolTipText(tr("increment number"));
         incrementNumRadio.setSelected(dto.isIncrementNum());
         incrementNumRadio.addItemListener(new RadioChangeListener());
         // editPanel.add(incrementNumRadio, GBC.std().weight(0, 0).insets(250, 5, 0, 5));
 
         incrementLetterRadio = new JRadioButton(TAG_INCREMENT_LETTER);
-        incrementLetterRadio.setToolTipText("supports 'a', 'A', '-a', '/A', '-1', '/1'");
+        incrementLetterRadio.setToolTipText(tr("supports 'a', 'A', '-a', '/A', '-1', '/1'"));
         incrementLetterRadio.setSelected(!dto.isIncrementNum());
         incrementLetterRadio.addItemListener(new RadioChangeListener());
         // editPanel.add(incrementLetterRadio, GBC.std().insets(5, 5, 0, 5));
