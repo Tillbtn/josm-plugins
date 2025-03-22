@@ -40,6 +40,11 @@ import org.openstreetmap.josm.tools.GBC;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Utils;
 
+import org.openstreetmap.josm.data.osm.DataSet;
+import org.openstreetmap.josm.data.osm.OsmPrimitive;
+import org.openstreetmap.josm.data.osm.Node;
+import org.openstreetmap.josm.data.osm.Way;
+
 /**
  * The dialog to show users the tags that will be applied to an object
  *
@@ -131,6 +136,10 @@ public class TagDialog extends ExtendedDialog {
             housenumber.requestFocus();
             housenumber.selectAll();
         });
+
+        // add selection listener for building / entrance
+        addSelectionListener();
+        updateCheckboxStates();
     }
 
     private JPanel createContentPane() {
@@ -320,8 +329,43 @@ public class TagDialog extends ExtendedDialog {
         housenumberChangeSequence.setSnapToTicks(true);
         editPanel.add(housenumberChangeSequence, GBC.eol().weight(1, 0).insets(20, 5, 10, 5).fill(GridBagConstraints.HORIZONTAL));
 
+        // add listeners for building / entrance
+        buildingEnabled.addItemListener(e -> updateCheckboxStates());
+        houseEnabled.addItemListener(e -> updateCheckboxStates());
+        entranceEnabled.addItemListener(e -> updateCheckboxStates());
+
         return editPanel;
     }
+
+    // helpers for checking wether node or way is selected
+    private boolean isWaySelected() {
+        DataSet ds = MainApplication.getLayerManager().getEditDataSet();
+        if (ds == null || ds.getSelected().isEmpty()) {
+            return false;
+        }
+        return ds.getSelected().iterator().next() instanceof Way;
+    }
+
+    private boolean isNodeSelected() {
+        DataSet ds = MainApplication.getLayerManager().getEditDataSet();
+        if (ds == null || ds.getSelected().isEmpty()) {
+            return false;
+        }
+        return ds.getSelected().iterator().next() instanceof Node;
+    }
+
+    // enable / disable checkboxes according to current selection
+    private void updateCheckboxStates() {
+        buildingEnabled.setEnabled(isWaySelected());
+        houseEnabled.setEnabled(isWaySelected() && buildingEnabled.isSelected());
+        entranceEnabled.setEnabled(isNodeSelected());
+    }
+
+    private void addSelectionListener() {
+        MainApplication.getLayerManager().addActiveLayerChangeListener(e -> updateCheckboxStates());
+        MainApplication.getLayerManager().getEditDataSet().addSelectionListener(e -> updateCheckboxStates());
+    }
+
 
     /**
      * Generate a checkbox for applying changes
@@ -493,7 +537,7 @@ public class TagDialog extends ExtendedDialog {
     protected void updateJOSMSelection(OsmPrimitive selection, Dto dto) {
         List<Command> commands = new ArrayList<>();
 
-        if (dto.isSaveBuilding()) {
+        if (dto.isSaveBuilding() && isWaySelected()) {
             String value = selection.get(TagDialog.TAG_BUILDING);
             if (value == null || !value.equals(dto.getBuilding())) {
                 ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_BUILDING, dto.getBuilding());
@@ -501,7 +545,7 @@ public class TagDialog extends ExtendedDialog {
             }
         }
 
-        if (dto.isSaveHouse()) {
+        if (dto.isSaveHouse() && dto.isSaveBuilding() && isWaySelected()) {
             String value = selection.get(TagDialog.TAG_HOUSE);
             if (value == null || !value.equals(dto.getHouse())) {
                 ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_HOUSE, dto.getHouse());
@@ -509,7 +553,7 @@ public class TagDialog extends ExtendedDialog {
             }
         }
 
-        if (dto.isSaveEntrance()) {
+        if (dto.isSaveEntrance() && isNodeSelected()) {
             String value = selection.get(TagDialog.TAG_ENTRANCE);
             if (value == null || !value.equals(dto.getEntrance())) {
                 ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_ENTRANCE, dto.getEntrance());
