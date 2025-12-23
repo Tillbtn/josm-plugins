@@ -107,6 +107,7 @@ public class TagDialog extends ExtendedDialog {
     private JRadioButton placeRadio;
     private JRadioButton incrementNumRadio;
     private JRadioButton incrementLetterRadio;
+    private final Boolean forceLetterIncrement;
 
     /**
      * Constructs a new {@code TagDialog}.
@@ -114,9 +115,23 @@ public class TagDialog extends ExtendedDialog {
      * @param selection selected primitive
      */
     public TagDialog(File pluginDir, OsmPrimitive selection) {
-        super(MainApplication.getMainFrame(), tr("House Number Editor"), new String[] {tr("OK"), tr("Cancel")}, true);
+        this(pluginDir, selection, null);
+    }
+
+    /**
+     * Constructs a new {@code TagDialog}.
+     * 
+     * @param pluginDir            plugin directory
+     * @param selection            selected primitive
+     * @param forceLetterIncrement if true, force letter increment mode; if false,
+     *                             force number increment mode; if null, use last
+     *                             saved setting
+     */
+    public TagDialog(File pluginDir, OsmPrimitive selection, Boolean forceLetterIncrement) {
+        super(MainApplication.getMainFrame(), tr("House Number Editor"), new String[] { tr("OK"), tr("Cancel") }, true);
         this.pluginDir = pluginDir;
         this.selection = selection;
+        this.forceLetterIncrement = forceLetterIncrement;
 
         JPanel editPanel = createContentPane();
 
@@ -213,7 +228,8 @@ public class TagDialog extends ExtendedDialog {
         country = generateAutoCompTextField(acm.getTagValues(TAG_ADDR_COUNTRY), dto.getCountry());
         editPanel.add(country, columnTwo);
 
-        editPanel.add(generateAcceptButton(actionEvent -> country.setSelectedItem(selection.get(TAG_ADDR_COUNTRY))), columnThree);
+        editPanel.add(generateAcceptButton(actionEvent -> country.setSelectedItem(selection.get(TAG_ADDR_COUNTRY))),
+                columnThree);
         editPanel.add(generateTextField(selection.get(TAG_ADDR_COUNTRY)), columnFour);
 
         // suburb
@@ -286,7 +302,26 @@ public class TagDialog extends ExtendedDialog {
         housenumberEnabled = generateCheckbox(TAG_ADDR_HOUSENUMBER, dto.isSaveHousenumber());
         editPanel.add(housenumberEnabled, columnOne);
 
-        housenumber = generateTextField(HouseNumberHelper.incrementHouseNumber(dto.getHousenumber(), dto.getHousenumberChangeValue(), dto.isIncrementNum()));
+        boolean determinedIncrementNum;
+        String nextHouseNumber;
+
+        if (Boolean.TRUE.equals(forceLetterIncrement)) {
+            if (HouseNumberHelper.hasLetter(dto.getHousenumber())) {
+                determinedIncrementNum = true;
+                nextHouseNumber = HouseNumberHelper.incrementNumberRemoveLetter(dto.getHousenumber(),
+                        dto.getHousenumberChangeValue());
+            } else {
+                determinedIncrementNum = false;
+                nextHouseNumber = HouseNumberHelper.incrementHouseNumber(dto.getHousenumber(),
+                        dto.getHousenumberChangeValue(), false);
+            }
+        } else {
+            determinedIncrementNum = forceLetterIncrement != null ? !forceLetterIncrement : dto.isIncrementNum();
+            nextHouseNumber = HouseNumberHelper.incrementHouseNumber(dto.getHousenumber(),
+                    dto.getHousenumberChangeValue(), determinedIncrementNum);
+        }
+
+        housenumber = generateTextField(nextHouseNumber);
         housenumber.setEditable(true);
 
         editPanel.add(housenumber, columnTwo);
@@ -297,13 +332,13 @@ public class TagDialog extends ExtendedDialog {
         // increment number or letter?
         incrementNumRadio = new JRadioButton(TAG_INCREMENT_NUMBER);
         incrementNumRadio.setToolTipText(tr("increment number"));
-        incrementNumRadio.setSelected(dto.isIncrementNum());
+        incrementNumRadio.setSelected(determinedIncrementNum);
         incrementNumRadio.addItemListener(new RadioChangeListener());
         // editPanel.add(incrementNumRadio, GBC.std().weight(0, 0).insets(250, 5, 0, 5));
 
         incrementLetterRadio = new JRadioButton(TAG_INCREMENT_LETTER);
         incrementLetterRadio.setToolTipText(tr("supports 'a', 'A', '-a', '/A', '-1', '/1'"));
-        incrementLetterRadio.setSelected(!dto.isIncrementNum());
+        incrementLetterRadio.setSelected(!determinedIncrementNum);
         incrementLetterRadio.addItemListener(new RadioChangeListener());
         // editPanel.add(incrementLetterRadio, GBC.std().insets(5, 5, 0, 5));
 
@@ -459,10 +494,23 @@ public class TagDialog extends ExtendedDialog {
     }
 
     private void updateIncrementNumOrLetter() {
-        if (loadDto().isIncrementNum()) {
+        if (Boolean.TRUE.equals(forceLetterIncrement)) {
+            if (HouseNumberHelper.hasLetter(loadDto().getHousenumber())) {
+                incrementNumRadio.setSelected(true);
+                incrementLetterRadio.setSelected(false);
+            } else {
+                incrementNumRadio.setSelected(false);
+                incrementLetterRadio.setSelected(true);
+            }
+        } else if (forceLetterIncrement != null) {
+            incrementNumRadio.setSelected(!forceLetterIncrement);
+            incrementLetterRadio.setSelected(forceLetterIncrement);
+        } else if (loadDto().isIncrementNum()) {
             incrementNumRadio.setSelected(true);
+            incrementLetterRadio.setSelected(false);
         } else {
             incrementLetterRadio.setSelected(true);
+            incrementNumRadio.setSelected(false); // explicit
         }
     }
 

@@ -23,20 +23,41 @@ public class LaunchAction extends JosmAction implements DataSelectionListener {
     private OsmPrimitive selection;
 
     private final File pluginDir;
+    private final Boolean forceLetterIncrement;
 
     /**
      * Constructs a new {@code LaunchAction}.
      * @param pluginDir plugin directory
      */
     public LaunchAction(File pluginDir) {
-        super(tr("HouseNumberTaggingTool"),
+        this(pluginDir, null, "HouseNumberTaggingTool", KeyEvent.VK_K, Shortcut.DIRECT, null);
+    }
+
+    /**
+     * Constructs a new {@code LaunchAction}.
+     * 
+     * @param pluginDir            plugin directory
+     * @param actionId             action identifier (null for default legacy
+     *                             behavior)
+     * @param name                 action name
+     * @param key                  shortcut key
+     * @param modifier             shortcut modifier
+     * @param forceLetterIncrement if true, force letter increment mode; if false,
+     *                             force number increment mode; if null, use last
+     *                             saved setting
+     */
+    public LaunchAction(File pluginDir, String actionId, String name, int key, int modifier,
+            Boolean forceLetterIncrement) {
+        super(tr(name),
               "home-icon32", 
               tr("Launches the HouseNumberTaggingTool dialog"),
-              Shortcut.registerShortcut("edit:housenumbertaggingtool", tr("Data: {0}", "HouseNumberTaggingTool"),
-                KeyEvent.VK_K, Shortcut.DIRECT),
+                Shortcut.registerShortcut("edit:housenumbertaggingtool" + (actionId == null ? "" : ":" + actionId),
+                        tr("Data: {0}", tr(name)),
+                        key, modifier),
               true);
 
         this.pluginDir = pluginDir;
+        this.forceLetterIncrement = forceLetterIncrement;
         SelectionEventManager.getInstance().addSelectionListener(this);
         setEnabled(false);
     }
@@ -49,7 +70,7 @@ public class LaunchAction extends JosmAction implements DataSelectionListener {
             return;
         }
       
-        TagDialog dialog = new TagDialog(pluginDir, selection);
+        TagDialog dialog = new TagDialog(pluginDir, selection, forceLetterIncrement);
         dialog.showDialog();
     }
 
