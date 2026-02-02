@@ -215,7 +215,7 @@ public final class TerracerAction extends JosmAction {
             // Special case of one outline and one address node.
             // Don't open the dialog
             terraceBuilding(outline, init, street, associatedStreet, 0, null, null, 0,
-                    housenumbers, streetname, associatedStreet != null, false, "yes");
+                    housenumbers, streetname, associatedStreet != null, false, "yes", false);
         } else {
             String title = trn("Change {0} object", "Change {0} objects", sel.size(), sel.size());
             // show input dialog.
