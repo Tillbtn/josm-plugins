@@ -128,12 +128,12 @@ public class HouseNumberInputHandler extends JosmAction implements FocusListener
         isOk &= checkNumberStringField(dialog.segments, tr("Segments"),
                         message);
 
-        JButton okButton = getButton(dialog, tr("Long side"));
-        if (okButton != null)
-            okButton.setEnabled(isOk);
-        JButton splitButton = getButton(dialog, tr("Short side"));
-        if (splitButton != null)
-            splitButton.setEnabled(isOk);
+        JButton longSideButton = getButton(dialog, tr("Long side"));
+        if (longSideButton != null)
+            longSideButton.setEnabled(isOk);
+        JButton shortSideButton = getButton(dialog, tr("Short side"));
+        if (shortSideButton != null)
+            shortSideButton.setEnabled(isOk);
         if (isOk) {
 
             // For some reason the messageLabel doesn't want to show up
@@ -279,19 +279,19 @@ public class HouseNumberInputHandler extends JosmAction implements FocusListener
                     saveValues();
 
                     terracerAction.terraceBuilding(
-                            outline,
-                            init,
-                            street,
-                            associatedStreet,
-                            segments(),
-                            dialog.lo.getText(),
-                            dialog.hi.getText(),
-                            stepSize(),
-                            housenumbers,
-                            streetName(),
-                            doHandleRelation(),
-                            doKeepOutline(), buildingType(),
-                            false);
+                        outline,
+                        init,
+                        street,
+                        associatedStreet,
+                        segments(),
+                        dialog.lo.getText(),
+                        dialog.hi.getText(),
+                        stepSize(),
+                        housenumbers,
+                        streetName(),
+                        doHandleRelation(),
+                        doKeepOutline(), buildingType(),
+                        false);
 
                     this.dialog.setVisible(false);
                 }
@@ -300,19 +300,19 @@ public class HouseNumberInputHandler extends JosmAction implements FocusListener
                     saveValues();
 
                     terracerAction.terraceBuilding(
-                            outline,
-                            init,
-                            street,
-                            associatedStreet,
-                            segments(),
-                            dialog.lo.getText(),
-                            dialog.hi.getText(),
-                            stepSize(),
-                            housenumbers,
-                            streetName(),
-                            doHandleRelation(),
-                            doKeepOutline(), buildingType(),
-                            true);
+                        outline,
+                        init,
+                        street,
+                        associatedStreet,
+                        segments(),
+                        dialog.lo.getText(),
+                        dialog.hi.getText(),
+                        stepSize(),
+                        housenumbers,
+                        streetName(),
+                        doHandleRelation(),
+                        doKeepOutline(), buildingType(),
+                        true);
 
                     this.dialog.setVisible(false);
                 }

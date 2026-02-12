@@ -303,8 +303,8 @@ public final class TerracerAction extends JosmAction {
      * @param invertSide If true, splits on the short side instead of the long side
      */
     public void terraceBuilding(final Way outline, Node init, Way street, Relation associatedStreet, Integer segments,
-            String start, String end, int step, List<Node> housenumbers, String streetName, boolean handleRelations,
-            boolean keepOutline, String buildingValue, boolean invertSide) {
+                String start, String end, int step, List<Node> housenumbers, String streetName, boolean handleRelations,
+                boolean keepOutline, String buildingValue, boolean invertSide) {
         final int nb;
         Integer to;
         Integer from = null;
@@ -596,7 +596,8 @@ public final class TerracerAction extends JosmAction {
      * segments to find the "sides". Sides are assumed to be single segments
      * which cannot be contiguous.
      *
-     * @param w The way to analyse.
+     * @param invertSide If true, forces the use of the alternative (adjacent) pair
+     *                   of sides, effectively rotating the split axis.
      * @return A pair of ways (front, back) pointing in the same directions.
      */
     private static Pair<Way, Way> findFrontAndBack(Way w, boolean invertSide) {
@@ -628,6 +629,8 @@ public final class TerracerAction extends JosmAction {
             side2 = (side2 + 1) % (w.getNodesCount() - 1);
         }
 
+        // if inverted, shift the selection to the adjacent segments to use the
+        // alternative pair of sides (e.g. top/bottom instead of left/right).
         if (invertSide) {
             side1 = (side1 + 1) % (w.getNodesCount() - 1);
             side2 = (side2 + 1) % (w.getNodesCount() - 1);

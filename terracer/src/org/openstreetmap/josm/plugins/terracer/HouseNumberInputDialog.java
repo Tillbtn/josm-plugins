@@ -95,7 +95,8 @@ public class HouseNumberInputDialog extends ExtendedDialog {
         super(MainApplication.getMainFrame(),
                 tr("Terrace a house"),
                 new String[] { tr("Long side"), tr("Short side"), tr("Cancel") },
-                true);
+                true
+        );
         this.inputHandler = handler;
         //this.street = street;
         this.streetName = streetName;
