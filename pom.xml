@@ -85,6 +85,7 @@
     <module>alignways</module>
     <module>apache-commons</module>
     <module>apache-http</module>
+    <module>bicycleroad</module>
     <module>buildings_tools</module>
     <module>cadastre-fr</module>
     <module>canvec_helper</module>

@@ -1,0 +1,70 @@
+README
+======
+
+BicycleRoad — a JOSM plugin
+
+Author:  Till Butenschön <Till.Butenschoen@student.hpi.de>
+License: GPL v2 or later (see the LICENSE file)
+
+Purpose
+-------
+Speeds up tagging ways as a bicycle road ("Fahrradstraße") or bicycle zone
+("Fahrradzone"), optionally adding a supplementary sign ("Anlieger frei" or
+"KFZ frei").
+
+It adds a "Tag bicycle road" command to the Data menu (and, optionally, the
+toolbar). Triggering it opens a small dialog where you pick:
+
+  1. the road type   — Fahrradstraße / Fahrradzone
+  2. an optional sign — None / Anlieger frei / KFZ frei
+
+The last choice is remembered (in the JOSM preferences) and pre-selected the
+next time, and the OK/Apply button is the default. So the common workflow
+
+    select way(s)  ->  trigger action  ->  press Enter
+
+re-applies the previous combination to everything selected in one undoable
+step.
+
+Tags
+----
+The OSM key/value pairs written for each option live in one place:
+
+    src/org/openstreetmap/josm/plugins/bicycleroad/BicycleRoadTags.java
+
+Base tags by type:
+
+  Fahrradstraße            Fahrradzone
+  bicycle=designated       bicycle=designated
+  bicycle_road=yes         bicycle_road=yes
+  traffic_sign=DE:244.1    traffic_sign=DE:244.3
+  maxspeed=30              maxspeed=30
+  source:maxspeed=         source:maxspeed=
+    DE:bicycle_road          DE:bicycle_zone
+  vehicle=no               vehicle=no
+
+Additional signs then modify the base:
+
+  Anlieger frei: vehicle=destination (replaces vehicle=no), and ",1020-30"
+                 appended to traffic_sign (e.g. DE:244.1,1020-30).
+  KFZ frei:      motor_vehicle=destination, ",KFZ frei" appended to
+                 traffic_sign, plus traffic_sign:note describing the combined
+                 sign (1024-10 + 1022-12, which has no official number).
+
+To change any of these, edit BicycleRoadTags.java — the dialog and apply logic
+need no changes.
+
+Keyboard shortcut
+-----------------
+The action registers a shortcut entry but binds no key by default (to avoid
+clashing with JOSM core or other plugins). Assign one under
+Preferences > Keyboard Shortcuts — search for "bicycle road".
+
+Building
+--------
+Maven (uses the JOSM core artifact from your local ~/.m2):
+
+    mvn -pl bicycleroad package
+
+The plugin jar is written to target/bicycleroad.jar. Install it by copying it
+into your JOSM plugins directory, or use `ant install` (see build.xml).

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="bicycleroad" default="dist" basedir=".">
+    <!-- enter the SVN commit message -->
+    <property name="commit.message" value="Add bicycleroad plugin: tag selected ways as Fahrradstraße/Fahrradzone"/>
+    <!-- enter the *lowest* JOSM version this plugin is currently compatible with -->
+    <property name="plugin.main.version" value="19044"/>
+
+    <property name="plugin.author" value="Till Butenschön &lt;Till.Butenschoen@student.hpi.de&gt;"/>
+    <property name="plugin.class" value="org.openstreetmap.josm.plugins.bicycleroad.BicycleRoadPlugin"/>
+    <property name="plugin.description" value="Quickly tag selected ways as a Fahrradstraße/Fahrradzone, with an optional additional sign."/>
+    <property name="plugin.icon" value="images/fahrradstrasse.svg"/>
+    <property name="plugin.link" value="https://wiki.openstreetmap.org/wiki/JOSM/Plugins/BicycleRoad"/>
+    <property name="plugin.canloadatruntime" value="true"/>
+
+    <!-- ** include targets that all plugins have in common ** -->
+    <import file="../build-common.xml"/>
+</project>
