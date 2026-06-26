@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="checkdate" default="dist" basedir=".">
+    <!-- enter the SVN commit message -->
+    <property name="commit.message" value="Add checkdate plugin: set check_date=* on selected objects, defaulting to today"/>
+    <!-- enter the *lowest* JOSM version this plugin is currently compatible with -->
+    <property name="plugin.main.version" value="19044"/>
+
+    <property name="plugin.author" value="Till Butenschön &lt;Till.Butenschoen@student.hpi.de&gt;"/>
+    <property name="plugin.class" value="org.openstreetmap.josm.plugins.checkdate.CheckDatePlugin"/>
+    <property name="plugin.description" value="Quickly set the check_date tag on selected objects, defaulting to today's date."/>
+    <property name="plugin.icon" value="images/checkdate.svg"/>
+    <property name="plugin.link" value="https://wiki.openstreetmap.org/wiki/JOSM/Plugins/CheckDate"/>
+    <property name="plugin.canloadatruntime" value="true"/>
+
+    <!-- ** include targets that all plugins have in common ** -->
+    <import file="../build-common.xml"/>
+</project>

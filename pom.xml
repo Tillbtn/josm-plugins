@@ -88,6 +88,7 @@
     <module>buildings_tools</module>
     <module>cadastre-fr</module>
     <module>canvec_helper</module>
+    <module>checkdate</module>
     <module>colorscheme</module>
     <module>ColumbusCSV</module>
     <module>comfort0</module>

@@ -1,0 +1,38 @@
+README
+======
+
+CheckDate — a JOSM plugin
+
+Author:  Till Butenschön <Till.Butenschoen@student.hpi.de>
+License: GPL v2 or later (see the LICENSE file)
+
+Purpose
+-------
+Speeds up stamping freshly-surveyed objects with the `check_date` tag
+(https://wiki.openstreetmap.org/wiki/Key:check_date).
+
+It adds a "Set check_date" command to the Data menu (and, optionally, the
+toolbar). Triggering it opens a small dialog whose text field is pre-filled
+with today's date and whose OK button is the default. So the common workflow
+
+    select object(s)  ->  trigger action  ->  press Enter
+
+stamps everything selected with `check_date=<today>` in one undoable step.
+
+A custom date can be typed instead. Accepted formats are the ISO-8601 forms
+used by OSM: `YYYY`, `YYYY-MM` or `YYYY-MM-DD`.
+
+Keyboard shortcut
+-----------------
+The action registers a shortcut entry but binds no key by default (to avoid
+clashing with JOSM core or other plugins). Assign one under
+Preferences > Keyboard Shortcuts — search for "check_date".
+
+Building
+--------
+Maven (uses the JOSM core artifact from your local ~/.m2):
+
+    mvn -pl checkdate package
+
+The plugin jar is written to target/checkdate.jar. Install it by copying it
+into your JOSM plugins directory, or use `ant install` (see build.xml).
