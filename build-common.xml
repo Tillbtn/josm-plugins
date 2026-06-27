@@ -41,7 +41,7 @@
     <property name="ivy.home"               location="${user.home}/.ant"/>
     <property name="ivy.jar.dir"            location="${ivy.home}/lib"/>
     <property name="ivy.jar.file"           location="${ivy.jar.dir}/ivy.jar"/>
-    <property name="ivy.version"            value="2.5.1"/>
+    <property name="ivy.version"            value="2.5.3"/>
     <property name="maven.artifact.resolver.version" value="1.5.1"/>
     <property name="maven.artifact.resolver.parent.dir" value="${user.home}/.m2/repository/org/apache/maven/resolver/maven-resolver-ant-tasks/${maven.artifact.resolver.version}/"/>
     <property name="maven.artifact.resolver.jar.file" value="${maven.artifact.resolver.parent.dir}/maven-resolver-ant-tasks-${maven.artifact.resolver.version}-uber.jar"/>
@@ -112,13 +112,15 @@
     <target name="pre-compile">
         <!-- to be overridden by plugins that need to perform additional tasks before compiling -->
     </target>
-    <target name="compile" depends="init, pre-compile, resolve-tools" unless="skip-compile">
+    <target name="plugin-classpath-actual">
         <condition property="plugin.classpath.actual.defined">
             <isreference refid="plugin.classpath.actual" type="path"/>
         </condition>
         <path id="plugin.classpath.actual" unless:set="plugin.classpath.actual.defined">
             <path refid="plugin.classpath"/>
         </path>
+    </target>
+    <target name="compile" depends="init, pre-compile, resolve-tools, plugin-classpath-actual" unless="skip-compile">
         <echo message="compiling sources for ${plugin.jar} ..."/>
         <path id="jdk.boot.classpath">
             <path refid="errorprone_javac.classpath"/>
@@ -129,13 +131,16 @@
             <compilerarg value="-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED" unless:set="noErrorProne"/>
             <compilerarg value="-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED" unless:set="noErrorProne"/>
             <compilerarg value="-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED" unless:set="noErrorProne"/>
+            <compilerarg value="-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED" unless:set="noErrorProne"/>
             <compilerarg value="-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED" unless:set="noErrorProne"/>
             <compilerarg value="-J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED" unless:set="noErrorProne"/>
             <compilerarg value="-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED" unless:set="noErrorProne"/>
             <compilerarg value="-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED" unless:set="noErrorProne"/>
             <compilerarg value="-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED" unless:set="noErrorProne"/>
             <compilerarg value="-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED" unless:set="noErrorProne"/>
-            <compilerarg line="-XDcompilePolicy=simple"/>
+            <compilerarg value="-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED" unless:set="noErrorProne"/>
+            <compilerarg value="-XDaddTypeAnnotationsToSymbol=true" if:set="isJava21" unless:set="noErrorProne"/>
+            <compilerarg value="-XDcompilePolicy=simple"/>
             <compilerarg value="--should-stop=ifError=FLOW" />
             <compilerarg value="-processorpath"/>
             <compilerarg pathref="errorprone.classpath"/>
@@ -289,7 +294,7 @@
     <target name="pre-javadoc">
         <!-- to be overridden by plugins that need to perform additional tasks before generating javadoc -->
     </target>
-    <target name="javadoc" depends="pre-javadoc,pre-compile" unless="skip-javadoc">
+    <target name="javadoc" depends="pre-javadoc,pre-compile,plugin-classpath-actual" unless="skip-javadoc">
         <mkdir dir="${plugin.doc.dir}"/>
         <javadoc destdir="${plugin.doc.dir}"
                 executable="${javadoc.executable}"
@@ -301,6 +306,7 @@
                 author="false">
             <classpath refid="plugin.classpath" unless:set="plugin.classpath.dependencies"/>
             <classpath refid="plugin.classpath.dependencies" if:set="plugin.classpath.dependencies"/>
+            <classpath refid="plugin.classpath.actual"/>
             <sourcepath>
                 <pathelement path="${plugin.src.dir}" />
                 <pathelement path="gen" />
@@ -594,13 +600,14 @@
         <delete file="../00_core_test_config/unit-josm.home/preferences.xml" />
         <delete dir="../00_core_test_config/unit-josm.home/cache" failonerror="false"/>
     </target>
-    <target name="test-compile" depends="test-init,dist" if="test.present" unless="skip-test">
+    <target name="test-compile" depends="test-init,dist,plugin-classpath-actual" if="test.present" unless="skip-test">
         <sequential>
             <javac debug="on" includeantruntime="false" srcdir="${plugin.test.dir}/unit" destdir="${plugin.test.dir}/build/unit" encoding="UTF-8"
                 release="${java.lang.version}">
                 <classpath>
                     <fileset refid="plugin.requires.jars"/>
                     <path refid="test.classpath"/>
+                    <path refid="plugin.classpath.actual"/>
                 </classpath>
                 <compilerarg value="-Xlint:all"/>
                 <compilerarg value="-Xlint:-serial"/>
@@ -619,6 +626,7 @@
                     <fileset refid="plugin.requires.jars"/>
                     <path refid="test.classpath"/>
                     <pathelement path="${plugin.test.dir}/build/unit"/>
+                    <path refid="plugin.classpath.actual"/>
                 </classpath>
                 <testclasses outputDir="${plugin.test.dir}/report">
                     <fileset dir="${plugin.test.dir}/build/unit" includes="**/*Test.class"/>
@@ -635,6 +643,7 @@
                         <jvmarg value="--add-exports" />
                         <jvmarg value="java.desktop/com.sun.imageio.spi=ALL-UNNAMED"  />
                         <jvmarg value="-XX:+ShowCodeDetailsInExceptionMessages" if:set="isJava14" unless:set="isJava15" />
+                        <jvmarg value="--enable-native-access=ALL-UNNAMED" if:set="isJava17" />
                         <sysproperty key="josm.home" value="../00_core_test_config/unit-josm.home"/>
                         <sysproperty key="josm.test.data" value="${plugin.test.dir}/data"/>
                         <sysproperty key="java.awt.headless" value="true"/>

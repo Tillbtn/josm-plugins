@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 
@@ -172,7 +173,7 @@ public class DownloadSVGBuilding extends PleaseWaitRunnable {
         MainApplication.getMap().repaint();
     }
 
-    private void createNodes(String SVGpath, ArrayList<EastNorth> eastNorth) {
+    private void createNodes(String SVGpath, List<EastNorth> eastNorth) {
         // looks like "M981283.38 368690.15l143.81 72.46 155.86 ..."
         String[] coor = SVGpath.split("[MlZ ]"); //coor[1] is x, coor[2] is y
         double dx = Double.parseDouble(coor[1]);
@@ -192,7 +193,6 @@ public class DownloadSVGBuilding extends PleaseWaitRunnable {
             EastNorth en = eastNorth.get(i);
             eastNorth.set(i, new EastNorth(en.east(), 2 * pivot - en.north()));
         }
-        return;
     }
 
     /**
@@ -215,8 +215,7 @@ public class DownloadSVGBuilding extends PleaseWaitRunnable {
 
     private String grabBoundary(EastNorthBound bbox) throws IOException, OsmTransferException {
         try {
-            URL url = null;
-            url = getURLsvg(bbox);
+            URL url = getURLsvg(bbox);
             return grabSVG(url);
         } catch (MalformedURLException e) {
             throw (IOException) new IOException(tr("CadastreGrabber: Illegal url.")).initCause(e);
