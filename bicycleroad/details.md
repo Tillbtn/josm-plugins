@@ -27,3 +27,23 @@ add "1020-30" with a comma to the existing traffic_sign value, i.e. "DE:244.1,10
 add "KFZ frei" to the existing traffic_sign value, i.e. "DE:244.3,"KFZ frei"
 traffic_sign:note="Zusatzzeichen: kombiniertes Schild aus 1024-10,1022-12 ohne eigene Nummer"
 (image: https://wiki.openstreetmap.org/w/images/c/ce/Zusatzzeichen_KFZ_frei.svg)
+
+"Landwirtschaftlicher Verkehr frei" should add:
+vehicle=agricultural (replace vehicle=no)
+add "1026-36" to the traffic_sign
+(image: https://upload.wikimedia.org/wikipedia/commons/4/41/Zusatzzeichen_1026-36_-_Landwirtschaftlicher_Verkehr_frei_%28450x600%29%2C_StVO_1992.svg)
+
+"Fortwirtschaftlicher Verkehr frei" should add:
+vehicle=forestry (replace vehicle=no)
+add "1026-37" to the traff_sign
+(image: https://upload.wikimedia.org/wikipedia/commons/d/d6/Zusatzzeichen_1026-37_-_Forstwirtschaftlicher_Verkehr_frei%2C_StVO_1992.svg)
+
+"Land- und Forstwirtschaftlicher Verkehr frei" should add:
+vehicle=agricultural;forestry (replace vehicle=no)
+add "1026-38" to the traffic_sign
+(image: https://upload.wikimedia.org/wikipedia/commons/6/6b/Zusatzzeichen_1026-38_-_Land-_und_forstwirtschaftlicher_Verkehr_frei_%28450x600%29%2C_StVO_1992.svg)
+
+"Linienverkehr frei" should add:
+bus=yes
+add "1026-32" to the traffic_sign
+(image: https://upload.wikimedia.org/wikipedia/commons/1/14/Zusatzzeichen_1026-32_-_Linienverkehr_frei_%28450x600%29%2C_StVO_1992.svg)

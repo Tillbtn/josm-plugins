@@ -9,14 +9,21 @@ License: GPL v2 or later (see the LICENSE file)
 Purpose
 -------
 Speeds up tagging ways as a bicycle road ("Fahrradstraße") or bicycle zone
-("Fahrradzone"), optionally adding a supplementary sign ("Anlieger frei" or
-"KFZ frei").
+("Fahrradzone"), optionally adding one or more supplementary signs
+("Zusatzzeichen").
 
 It adds a "Tag bicycle road" command to the Data menu (and, optionally, the
-toolbar). Triggering it opens a small dialog where you pick:
+toolbar). Triggering it opens a dialog where you pick:
 
-  1. the road type   — Fahrradstraße / Fahrradzone
-  2. an optional sign — None / Anlieger frei / KFZ frei
+  1. the road type        — Fahrradstraße / Fahrradzone (exactly one)
+  2. additional signs      — any number, via checkboxes:
+       Anlieger frei, KFZ frei, Landwirtschaftlicher Verkehr frei,
+       Forstwirtschaftlicher Verkehr frei,
+       Land- und Forstwirtschaftlicher Verkehr frei, Linienverkehr frei
+
+Each option shows its real traffic-sign image; the currently selected ones are
+marked with a coloured border. Some signs are mutually exclusive (e.g. "Anlieger
+frei" and "KFZ frei"): selecting one automatically deselects the other.
 
 The last choice is remembered (in the JOSM preferences) and pre-selected the
 next time, and the OK/Apply button is the default. So the common workflow
@@ -43,13 +50,36 @@ Base tags by type:
     DE:bicycle_road          DE:bicycle_zone
   vehicle=no               vehicle=no
 
-Additional signs then modify the base:
+Additional signs then modify the base. Each appends its code to traffic_sign
+(comma-separated) and contributes override tags:
 
-  Anlieger frei: vehicle=destination (replaces vehicle=no), and ",1020-30"
-                 appended to traffic_sign (e.g. DE:244.1,1020-30).
-  KFZ frei:      motor_vehicle=destination, ",KFZ frei" appended to
-                 traffic_sign, plus traffic_sign:note describing the combined
-                 sign (1024-10 + 1022-12, which has no official number).
+  Anlieger frei                  +1020-30   vehicle=destination
+  KFZ frei                       +KFZ frei  motor_vehicle=yes,
+                                            traffic_sign:note="Zusatzzeichen:
+                                            kombiniertes Schild aus 1024-10,
+                                            1022-12 ohne eigene Nummer"
+  Landwirtschaftl. Verkehr frei  +1026-36   vehicle=agricultural
+  Forstwirtschaftl. Verkehr frei +1026-37   vehicle=forestry
+  Land- u. Forstwirtsch. frei    +1026-38   vehicle=agricultural;forestry
+  Linienverkehr frei             +1026-32   bus=yes
+
+When several signs are selected, their traffic_sign codes are appended in order
+and override values for the same key are merged with ";". Example —
+Fahrradstraße + Anlieger frei + Forstwirtschaftlicher Verkehr frei:
+
+  traffic_sign=DE:244.1,1020-30,1026-37
+  vehicle=destination;forestry
+
+Combination rule (see inConflict() in BicycleRoadTags.java): only "Anlieger
+frei" may be combined with another sign — and not with "KFZ frei". Every other
+pair is mutually exclusive (selecting one deselects the conflicting one), since
+e.g. "KFZ frei" + "Linienverkehr frei" or two overlapping agricultural/forestry
+signs make no sense together.
+
+Re-applying replaces a previous tagging cleanly: optional keys a sign sets
+(motor_vehicle, bus, traffic_sign:note) are removed again when no currently
+selected sign sets them, so switching from "KFZ frei" to something else does
+not leave a stale motor_vehicle=yes behind.
 
 To change any of these, edit BicycleRoadTags.java — the dialog and apply logic
 need no changes.
