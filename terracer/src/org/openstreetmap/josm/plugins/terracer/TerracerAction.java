@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import javax.swing.JOptionPane;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.command.AddCommand;
 import org.openstreetmap.josm.command.ChangeCommand;
+import org.openstreetmap.josm.command.ChangeNodesCommand;
 import org.openstreetmap.josm.command.ChangePropertyCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.DeleteCommand;
@@ -40,6 +42,8 @@ import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Tag;
 import org.openstreetmap.josm.data.osm.TagCollection;
 import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.data.projection.Projection;
+import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.gui.ExtendedDialog;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.conflict.tags.CombinePrimitiveResolverDialog;
@@ -363,20 +367,28 @@ public final class TerracerAction extends JosmAction {
         DataSet ds = getLayerManager().getEditDataSet();
 
         if (nb > 1) {
+            // ways sharing nodes with the outline, e.g. adjacent buildings
+            final Collection<Way> neighbours = findNeighbours(outline);
+
             // add required new nodes and build list of nodes to reuse
             for (int i = 0; i <= nb; ++i) {
                 int iDir = swap ? nb - i : i;
-                newNodes[0][i] = reuseFeatureNode(interpolateAlong(interp.a, frontLength * iDir / nb), featureNodes);
-                newNodes[1][i] = reuseFeatureNode(interpolateAlong(interp.b, backLength * iDir / nb), featureNodes);
-                if (!outline.containsNode(newNodes[0][i]))
-                    this.commands.add(new AddCommand(ds, newNodes[0][i]));
-                else
-                    reusedNodes.add(newNodes[0][i]);
-                if (!outline.containsNode(newNodes[1][i]))
-                    this.commands.add(new AddCommand(ds, newNodes[1][i]));
-                else
-                    reusedNodes.add(newNodes[1][i]);
+                newNodes[0][i] = interpolateAlong(interp.a, frontLength * iDir / nb);
+                newNodes[1][i] = interpolateAlong(interp.b, backLength * iDir / nb);
+                for (int side = 0; side < 2; side++) {
+                    // reuse existing nodes at the same position instead of creating duplicates
+                    Node n = reuseFeatureNode(newNodes[side][i], featureNodes);
+                    n = reuseNeighbourNode(n, neighbours);
+                    newNodes[side][i] = n;
+                    if (n.getDataSet() == null)
+                        this.commands.add(new AddCommand(ds, n));
+                    else if (outline.containsNode(n))
+                        reusedNodes.add(n);
+                }
             }
+
+            // new nodes lying exactly on a neighbouring way are inserted into that way as well
+            connectToNeighbours(newNodes, neighbours);
 
             // assemble new quadrilateral, closed ways
             final List<Way> terraces = new ArrayList<>(nb);
@@ -679,9 +691,7 @@ public final class TerracerAction extends JosmAction {
                         bestDistance = distance;
                         bestWay = w;
                         bestSegment = i;
-                        double dx = b.east() - a.east();
-                        double dy = b.north() - a.north();
-                        bestPosition = ((p.east() - a.east()) * dx + (p.north() - a.north()) * dy) / (dx * dx + dy * dy);
+                        bestPosition = positionOnSegment(a, b, p);
                     }
                 }
             }
@@ -706,6 +716,102 @@ public final class TerracerAction extends JosmAction {
             }
             nodes.add(nodes.get(0));
             w.setNodes(nodes);
+        }
+    }
+
+    /**
+     * Returns the parameter t of the orthogonal projection of p onto the segment a-b,
+     * such that a + t * (b - a) is the projected point.
+     */
+    private static double positionOnSegment(EastNorth a, EastNorth b, EastNorth p) {
+        double dx = b.east() - a.east();
+        double dy = b.north() - a.north();
+        double len2 = dx * dx + dy * dy;
+        return len2 == 0 ? 0 : ((p.east() - a.east()) * dx + (p.north() - a.north()) * dy) / len2;
+    }
+
+    /**
+     * Finds the ways sharing at least one node with the outline, e.g. adjacent buildings.
+     *
+     * @param outline the closed outline
+     * @return the neighbouring ways, without the outline itself
+     */
+    private static Collection<Way> findNeighbours(Way outline) {
+        final Set<Way> neighbours = new LinkedHashSet<>();
+        for (Node n : outline.getNodes()) {
+            for (OsmPrimitive p : n.getReferrers()) {
+                if (p instanceof Way && p != outline && !p.isDeleted()) {
+                    neighbours.add((Way) p);
+                }
+            }
+        }
+        return neighbours;
+    }
+
+    /**
+     * If a newly interpolated node coincides with a node of a neighbouring way, that node is
+     * used instead so that the new building is connected to the neighbour.
+     */
+    private static Node reuseNeighbourNode(Node interpolated, Collection<Way> neighbours) {
+        if (interpolated.getDataSet() != null)
+            return interpolated;
+        for (Way w : neighbours) {
+            for (Node n : w.getNodes()) {
+                if (n.equalsEpsilon(interpolated, ILatLon.MAX_SERVER_PRECISION))
+                    return n;
+            }
+        }
+        return interpolated;
+    }
+
+    /**
+     * Inserts the new nodes lying exactly on a segment of a neighbouring way into that way,
+     * so that e.g. an adjacent building sharing a wall with the outline stays connected to
+     * the new buildings.
+     *
+     * @param newNodes the new nodes of the terrace (front and back)
+     * @param neighbours the neighbouring ways, see {@link #findNeighbours}
+     */
+    private void connectToNeighbours(Node[][] newNodes, Collection<Way> neighbours) {
+        if (neighbours.isEmpty())
+            return;
+        final Projection projection = ProjectionRegistry.getProjection();
+        // way -> segment index -> nodes with their position along the segment
+        final Map<Way, Map<Integer, List<Pair<Double, Node>>>> insertions = new HashMap<>();
+        for (Node[] side : newNodes) {
+            for (Node n : side) {
+                if (n.getDataSet() != null)
+                    continue; // existing node, already connected
+                final EastNorth p = n.getEastNorth();
+                for (Way w : neighbours) {
+                    for (int i = 0; i < w.getNodesCount() - 1; i++) {
+                        EastNorth a = w.getNode(i).getEastNorth();
+                        EastNorth b = w.getNode(i + 1).getEastNorth();
+                        EastNorth closest = Geometry.closestPointToSegment(a, b, p);
+                        if (projection.eastNorth2latlon(closest).equalsEpsilon(n, ILatLon.MAX_SERVER_PRECISION)) {
+                            insertions.computeIfAbsent(w, k -> new HashMap<>())
+                                      .computeIfAbsent(i, k -> new ArrayList<>())
+                                      .add(new Pair<>(positionOnSegment(a, b, p), n));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        for (Map.Entry<Way, Map<Integer, List<Pair<Double, Node>>>> entry : insertions.entrySet()) {
+            final Way w = entry.getKey();
+            final List<Node> nodes = new ArrayList<>();
+            for (int i = 0; i < w.getNodesCount(); i++) {
+                nodes.add(w.getNode(i));
+                List<Pair<Double, Node>> toInsert = entry.getValue().get(i);
+                if (toInsert != null) {
+                    toInsert.sort(Comparator.comparingDouble(pair -> pair.a));
+                    for (Pair<Double, Node> pair : toInsert) {
+                        nodes.add(pair.b);
+                    }
+                }
+            }
+            this.commands.add(new ChangeNodesCommand(w, nodes));
         }
     }
 

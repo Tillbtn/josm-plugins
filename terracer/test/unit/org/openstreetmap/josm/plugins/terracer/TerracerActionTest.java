@@ -175,6 +175,83 @@ class TerracerActionTest {
     }
 
     /**
+     * New wall nodes lying on the wall of an adjacent building are inserted into that
+     * building as well, in the right order.
+     */
+    @Test
+    void testNewNodesConnectedToNeighbour() {
+        Node a = node(50.0000, 10.0000);
+        Node b = node(50.0002, 10.0000);
+        Node c = node(50.0002, 10.0012);
+        Node d = node(50.0000, 10.0012);
+        Node e = node(50.0004, 10.0012);
+        Node f = node(50.0004, 10.0000);
+        Way outline = closedWay(a, b, c, d);
+        outline.put("building", "yes");
+        // adjacent building sharing the back wall c-b
+        Way neighbour = closedWay(c, e, f, b);
+        neighbour.put("building", "yes");
+        // building touching only in one corner
+        Way corner = closedWay(d, node(50.0000, 10.0015), node(49.9998, 10.0015), node(49.9998, 10.0012));
+        corner.put("building", "yes");
+
+        new TerracerAction().terraceBuilding(outline, null, null, null, 3,
+                null, null, 1, Collections.emptyList(), null, false, false, "house", false);
+
+        List<Way> houses = buildings();
+        houses.remove(neighbour);
+        houses.remove(corner);
+        assertEquals(3, houses.size());
+        houses.forEach(TerracerActionTest::assertValidOutline);
+        assertValidOutline(neighbour);
+        assertEquals(7, neighbour.getNodesCount(), "two new nodes inserted: " + neighbour.getNodes());
+        assertEquals(5, corner.getNodesCount());
+        // b, wall at 10.0004, wall at 10.0008, c: ordered along the segment b-c of the neighbour
+        List<Node> nodes = neighbour.getNodes();
+        int ib = nodes.indexOf(b);
+        assertEquals(10.0004, nodes.get(ib + 1).lon(), 1e-9);
+        assertEquals(10.0008, nodes.get(ib + 2).lon(), 1e-9);
+        assertEquals(c, nodes.get(ib + 3));
+        // the inserted nodes are the back wall nodes of the houses
+        assertTrue(houses.get(0).containsNode(nodes.get(ib + 1)));
+        assertTrue(houses.get(1).containsNode(nodes.get(ib + 1)));
+        assertTrue(houses.get(1).containsNode(nodes.get(ib + 2)));
+        assertTrue(houses.get(2).containsNode(nodes.get(ib + 2)));
+        // the front nodes are not part of the neighbour
+        assertEquals(0, nodes.stream().filter(n -> n.lat() < 50.0001).count());
+    }
+
+    /**
+     * If the adjacent building already has a node where the new wall starts, that node is
+     * reused instead of creating a duplicate next to it.
+     */
+    @Test
+    void testExistingNeighbourNodeReused() {
+        Node a = node(50.0000, 10.0000);
+        Node b = node(50.0002, 10.0000);
+        Node c = node(50.0002, 10.0010);
+        Node d = node(50.0000, 10.0010);
+        Node existing = node(50.0002, 10.0005);
+        Way outline = closedWay(a, b, c, d);
+        outline.put("building", "yes");
+        Way neighbour = closedWay(c, node(50.0004, 10.0010), node(50.0004, 10.0000), b, existing);
+        neighbour.put("building", "yes");
+
+        new TerracerAction().terraceBuilding(outline, null, null, null, 2,
+                null, null, 1, Collections.emptyList(), null, false, false, "house", false);
+
+        List<Way> houses = buildings();
+        houses.remove(neighbour);
+        assertEquals(2, houses.size());
+        houses.forEach(TerracerActionTest::assertValidOutline);
+        assertEquals(6, neighbour.getNodesCount(), "neighbour unchanged: " + neighbour.getNodes());
+        assertTrue(houses.get(0).containsNode(existing));
+        assertTrue(houses.get(1).containsNode(existing));
+        assertEquals(1, ds.getNodes().stream().filter(n -> !n.isDeleted() && Math.abs(n.lat() - 50.0002) < 1e-9
+                && Math.abs(n.lon() - 10.0005) < 1e-9).count(), "no duplicate node");
+    }
+
+    /**
      * Without feature nodes the result is the same as before.
      */
     @Test
