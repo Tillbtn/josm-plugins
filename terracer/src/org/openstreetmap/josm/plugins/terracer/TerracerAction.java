@@ -639,7 +639,7 @@ public final class TerracerAction extends JosmAction {
     /**
      * Returns the absolute change of direction (in radians, 0..pi) at node b of the path a-b-c.
      */
-    private static double turnAngle(EastNorth a, EastNorth b, EastNorth c) {
+    static double turnAngle(EastNorth a, EastNorth b, EastNorth c) {
         double dx1 = b.east() - a.east();
         double dy1 = b.north() - a.north();
         double dx2 = c.east() - b.east();
