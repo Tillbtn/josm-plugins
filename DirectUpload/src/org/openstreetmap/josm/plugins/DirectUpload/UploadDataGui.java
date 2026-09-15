@@ -49,8 +49,6 @@ public class UploadDataGui extends ExtendedDialog {
      * explanation. Provides some methods for easier handling.
      */
     private enum visibility {
-        PRIVATE      (tr("Private (only shared as anonymous, unordered points)")),
-        PUBLIC       (tr("Public (shown in trace list and as anonymous, unordered points)")),
         TRACKABLE    (tr("Trackable (only shared as anonymous, ordered points with timestamps)")),
         IDENTIFIABLE (tr("Identifiable (shown in trace list and as identifiable, ordered points with timestamps)"));
 
@@ -126,7 +124,7 @@ public class UploadDataGui extends ExtendedDialog {
         for(visibility v : visibility.values()) {
             visibilityCombo.addItem(v.description);
         }
-        visibilityCombo.setSelectedItem(visibility.valueOf(Config.getPref().get("directupload.visibility.last-used", visibility.PRIVATE.name())).description);
+        visibilityCombo.setSelectedItem(visibility.valueOf(Config.getPref().get("directupload.visibility.last-used", visibility.TRACKABLE.name())).description);
         /* I18n: either copy the link verbose or replace it by the translated version from the wiki for already translated languages */
         UrlLabel visiUrl = new UrlLabel(tr("https://wiki.openstreetmap.org/wiki/Visibility_of_GPS_traces"), tr("(What does that mean?)"), 2);
 

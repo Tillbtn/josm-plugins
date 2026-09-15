@@ -19,7 +19,7 @@
         <plugin.main.version>19044</plugin.main.version>
         <plugin.author>Benjamin Schulz</plugin.author>
         <plugin.class>org.openstreetmap.josm.plugins.turnlanes.TurnLanesPlugin</plugin.class>
-        <plugin.description>Provides a straightforward GUI for adding, editing and deleting turn lanes.</plugin.description>
+        <plugin.description>Provides a straightforward GUI for adding, editing and deleting turn lanes relations (type=turnlanes:turns). Note that the proposal status is set as obsoleted / inactive.</plugin.description>
         <plugin.icon>images/dialogs/turnlanes.png</plugin.icon>
         <plugin.link>https://wiki.openstreetmap.org/wiki/Relations/Proposed/turn_lanes#Plugin</plugin.link>
     </properties>
