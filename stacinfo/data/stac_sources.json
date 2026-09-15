@@ -1,0 +1,110 @@
+{
+  "_comment": [
+    "Default date sources shipped with the stacinfo plugin.",
+    "Copy an entry into your own file (JOSM preferences directory: plugins/stacinfo/stac_sources.json)",
+    "to add a new endpoint, or use Preferences -> Imagery -> STAC data currency.",
+    "Fields: name (required), url (required, STAC API root or a full .../search URL, or the URL of a WFS),",
+    "type (stac by default, wfs for an OGC WFS 2.0 queried with GetFeature),",
+    "collections (STAC collections, or the feature types of a WFS, where at least one is required),",
+    "layerMatch (regular expressions matched against name/id/URL of the imagery layer),",
+    "dateProperty, detailProperties, color, attribution, sortByDate, enabled."
+  ],
+  "sources": [
+    {
+      "name": "Niedersachsen DOP20 (LGLN)",
+      "url": "https://dop.stac.lgln.niedersachsen.de/",
+      "collections": ["DOP"],
+      "layerMatch": ["Niedersachsen-DOP20", "niedersachsen.*dop", "lgln.*dop"],
+      "dateProperty": "datetime",
+      "detailProperties": ["bildflugname", "bildflugnummer", "bodenpixelgroesse", "bezugsflaeche"],
+      "color": "#E8590C",
+      "attribution": "© LGLN, CC BY 4.0"
+    },
+    {
+      "name": "Niedersachsen bDOM20 (LGLN)",
+      "url": "https://bdom.stac.lgln.niedersachsen.de/",
+      "collections": ["BDOM"],
+      "layerMatch": ["niedersachsen.*bdom", "lgln.*bdom"],
+      "detailProperties": ["bildflugname", "bildflugnummer", "aufloesung", "camera"],
+      "color": "#F59F00",
+      "attribution": "© LGLN, CC BY 4.0"
+    },
+    {
+      "name": "Niedersachsen DOM1 (LGLN)",
+      "url": "https://dom.stac.lgln.niedersachsen.de/",
+      "collections": ["dom1"],
+      "layerMatch": ["niedersachsen.*dom"],
+      "detailProperties": ["los", "genauigkeit", "erfassungsmethode"],
+      "color": "#0CA678",
+      "attribution": "© LGLN, CC BY 4.0"
+    },
+    {
+      "name": "Niedersachsen DGM1 (LGLN)",
+      "url": "https://dgm.stac.lgln.niedersachsen.de/",
+      "collections": ["dgm1"],
+      "layerMatch": ["niedersachsen.*dgm"],
+      "detailProperties": ["los", "genauigkeit"],
+      "color": "#7048E8",
+      "attribution": "© LGLN, CC BY 4.0"
+    },
+    {
+      "name": "Niedersachsen ALKIS (LGLN)",
+      "_comment": "Only the collection with one item per district is queried; the other ALKIS collections carry a single item covering the whole state.",
+      "url": "https://alkis.stac.lgln.niedersachsen.de/",
+      "collections": ["alkis-landkreise"],
+      "layerMatch": ["Niedersachsen-ALKIS", "niedersachsen.*alkis"],
+      "color": "#1098AD",
+      "attribution": "© LGLN, CC BY 4.0"
+    },
+    {
+      "name": "Brandenburg DOP (LGB)",
+      "_comment": "Brandenburg has no STAC API; the currency overviews of the LGB are read as a WFS instead.",
+      "type": "wfs",
+      "url": "https://isk.geobasis-bb.de/ows/aktualitaeten_wfs",
+      "collections": ["app:dop_single"],
+      "layerMatch": ["Brandenburg-DOP20c", "geobasis-bb.*dop", "brandenburg.*dop"],
+      "dateProperty": "creationdate",
+      "detailProperties": ["product", "sheetnr", "publicationdate"],
+      "color": "#D6336C",
+      "attribution": "© GeoBasis-DE/LGB, dl-de/by-2-0"
+    },
+    {
+      "name": "Brandenburg DOP20 history (LGB)",
+      "_comment": "The finished flight cycles, switched off by default because every feature type is one request.",
+      "type": "wfs",
+      "url": "https://isk.geobasis-bb.de/ows/aktualitaeten_wfs",
+      "collections": [
+        "app:dop20rgbi_2022_2024_single",
+        "app:dop20rgbi_2019_2021_single",
+        "app:dop20rgbi_2016_2018_single",
+        "app:dop20rgbi_2013_2015_single",
+        "app:dop20rgbi_2009_2012_single",
+        "app:dop20c_2005_2010_single"
+      ],
+      "layerMatch": ["Brandenburg-DOP20c", "geobasis-bb.*dop"],
+      "dateProperty": "creationdate",
+      "detailProperties": ["product", "sheetnr", "publicationdate"],
+      "color": "#A61E4D",
+      "attribution": "© GeoBasis-DE/LGB, dl-de/by-2-0",
+      "enabled": false
+    },
+    {
+      "name": "Sentinel-2 L2A (Earth Search)",
+      "url": "https://earth-search.aws.element84.com/v1/",
+      "collections": ["sentinel-2-l2a"],
+      "layerMatch": ["sentinel-2", "sentinel2"],
+      "detailProperties": ["eo:cloud_cover", "platform", "grid:code"],
+      "color": "#1C7ED6",
+      "attribution": "Copernicus Sentinel data"
+    },
+    {
+      "name": "Sentinel-2 L2A (CODE-DE)",
+      "_comment": "German Copernicus mirror. Without layerMatch it is not offered automatically, pick it in the dialog.",
+      "url": "https://stac.code-de.org/",
+      "collections": ["sentinel-2-l2a"],
+      "detailProperties": ["eo:cloud_cover", "platform", "gsd"],
+      "color": "#4263EB",
+      "attribution": "Copernicus Sentinel data, CODE-DE"
+    }
+  ]
+}

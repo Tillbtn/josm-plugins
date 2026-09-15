@@ -160,6 +160,7 @@
     <module>SimplifyArea</module>
     <module>smed</module>
     <module>splinex</module>
+    <module>stacinfo</module>
     <module>surveyor</module>
     <module>tageditor</module>
     <module>tagging-preset-tester</module>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="stacinfo" default="dist" basedir=".">
+
+    <!-- enter the SVN commit message -->
+    <property name="commit.message" value="Add stacinfo plugin: show the currency (acquisition dates) of imagery layers from STAC APIs"/>
+    <!-- enter the *lowest* JOSM version this plugin is currently compatible with -->
+    <property name="plugin.main.version" value="19044"/>
+
+    <property name="plugin.author" value="Till Butenschön"/>
+    <property name="plugin.class" value="org.openstreetmap.josm.plugins.stacinfo.StacInfoPlugin"/>
+    <property name="plugin.description" value="Shows how up to date a background imagery layer is by querying the STAC API of the imagery provider and drawing the acquisition dates of the images on the map."/>
+    <property name="plugin.icon" value="images/dialogs/stacinfo.svg"/>
+    <property name="plugin.link" value="https://wiki.openstreetmap.org/wiki/JOSM/Plugins/StacInfo"/>
+    <!--<property name="plugin.early" value="..."/>-->
+    <!--<property name="plugin.requires" value="..."/>-->
+    <!--<property name="plugin.stage" value="..."/>-->
+
+    <!-- ** include targets that all plugins have in common ** -->
+    <import file="../build-common.xml"/>
+
+</project>

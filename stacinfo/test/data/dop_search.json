@@ -1,0 +1,279 @@
+{
+ "type": "FeatureCollection",
+ "links": [
+  {
+   "rel": "root",
+   "type": "application/json",
+   "href": "https://dop.stac.lgln.niedersachsen.de/"
+  },
+  {
+   "rel": "self",
+   "type": "application/geo+json",
+   "href": "https://dop.stac.lgln.niedersachsen.de/search"
+  },
+  {
+   "rel": "next",
+   "type": "application/geo+json",
+   "method": "GET",
+   "href": "https://dop.stac.lgln.niedersachsen.de/search?bbox=9.72%2C52.36%2C9.74%2C52.38&limit=3&token=next%3ADOP%3Adop20rgbi_32_548_5802_2_ni_2025-03-06"
+  }
+ ],
+ "features": [
+  {
+   "id": "dop20rgbi_32_550_5802_2_ni_2025-03-06",
+   "bbox": [
+    9.7343351,
+    52.3658067,
+    9.7640159,
+    52.3839721
+   ],
+   "type": "Feature",
+   "assets": {
+    "preview": {
+     "href": "https://dop20-rgb.s3.eu-de.cloud-object-storage.appdomain.cloud/325505802/2025-03-06/dop20rgb_32_550_5802_2_ni_2025-03-06.tif",
+     "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+     "roles": [
+      "thumbnail"
+     ]
+    },
+    "dop20_rgb": {
+     "href": "https://dop20-rgb.s3.eu-de.cloud-object-storage.appdomain.cloud/325505802/2025-03-06/dop20rgb_32_550_5802_2_ni_2025-03-06.tif",
+     "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+     "roles": [
+      "data"
+     ]
+    },
+    "dop20_rgbi": {
+     "href": "https://dop20-rgbi.s3.eu-de.cloud-object-storage.appdomain.cloud/325505802/2025-03-06/dop20rgbi_32_550_5802_2_ni_2025-03-06.tif",
+     "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+     "roles": [
+      "data"
+     ]
+    },
+    "metadata_rgb": {
+     "href": "https://dop20-rgb.s3.eu-de.cloud-object-storage.appdomain.cloud/325505802/2025-03-06/dop20rgb_32_550_5802_2_ni_2025-03-06.xml",
+     "type": "text/plain",
+     "roles": [
+      "metadata"
+     ]
+    },
+    "metadata_rgbi": {
+     "href": "https://dop20-rgbi.s3.eu-de.cloud-object-storage.appdomain.cloud/325505802/2025-03-06/dop20rgbi_32_550_5802_2_ni_2025-03-06.xml",
+     "type": "text/plain",
+     "roles": [
+      "metadata"
+     ]
+    }
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       9.7346334,
+       52.3839721
+      ],
+      [
+       9.7343351,
+       52.3659928
+      ],
+      [
+       9.7637057,
+       52.3658067
+      ],
+      [
+       9.7640159,
+       52.3837859
+      ],
+      [
+       9.7346334,
+       52.3839721
+      ]
+     ]
+    ]
+   },
+   "collection": "DOP",
+   "properties": {
+    "camera": "Ultracam Eagle UC-EpII-1-82416042-f100",
+    "license": "CC-BY-4.0",
+    "datetime": "2025-03-06T00:00:00Z",
+    "kachelname": "dop20rgbi_32_550_5802_2_ni_2025-03-06",
+    "bildflugname": "Hannover",
+    "bezugsflaeche": "bDOM",
+    "bildflugnummer": "3817",
+    "bodenpixelgroesse": "20"
+   }
+  },
+  {
+   "id": "dop20rgbi_32_550_5800_2_ni_2025-03-06",
+   "bbox": [
+    9.7340371,
+    52.3478275,
+    9.7637057,
+    52.3659928
+   ],
+   "type": "Feature",
+   "assets": {
+    "preview": {
+     "href": "https://dop20-rgb.s3.eu-de.cloud-object-storage.appdomain.cloud/325505800/2025-03-06/dop20rgb_32_550_5800_2_ni_2025-03-06.tif",
+     "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+     "roles": [
+      "thumbnail"
+     ]
+    },
+    "dop20_rgb": {
+     "href": "https://dop20-rgb.s3.eu-de.cloud-object-storage.appdomain.cloud/325505800/2025-03-06/dop20rgb_32_550_5800_2_ni_2025-03-06.tif",
+     "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+     "roles": [
+      "data"
+     ]
+    },
+    "dop20_rgbi": {
+     "href": "https://dop20-rgbi.s3.eu-de.cloud-object-storage.appdomain.cloud/325505800/2025-03-06/dop20rgbi_32_550_5800_2_ni_2025-03-06.tif",
+     "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+     "roles": [
+      "data"
+     ]
+    },
+    "metadata_rgb": {
+     "href": "https://dop20-rgb.s3.eu-de.cloud-object-storage.appdomain.cloud/325505800/2025-03-06/dop20rgb_32_550_5800_2_ni_2025-03-06.xml",
+     "type": "text/plain",
+     "roles": [
+      "metadata"
+     ]
+    },
+    "metadata_rgbi": {
+     "href": "https://dop20-rgbi.s3.eu-de.cloud-object-storage.appdomain.cloud/325505800/2025-03-06/dop20rgbi_32_550_5800_2_ni_2025-03-06.xml",
+     "type": "text/plain",
+     "roles": [
+      "metadata"
+     ]
+    }
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       9.7343351,
+       52.3659928
+      ],
+      [
+       9.7340371,
+       52.3480135
+      ],
+      [
+       9.7633958,
+       52.3478275
+      ],
+      [
+       9.7637057,
+       52.3658067
+      ],
+      [
+       9.7343351,
+       52.3659928
+      ]
+     ]
+    ]
+   },
+   "collection": "DOP",
+   "properties": {
+    "camera": "Ultracam Eagle UC-EpII-1-82416042-f100",
+    "license": "CC-BY-4.0",
+    "datetime": "2025-03-06T00:00:00Z",
+    "kachelname": "dop20rgbi_32_550_5800_2_ni_2025-03-06",
+    "bildflugname": "Hannover",
+    "bezugsflaeche": "bDOM",
+    "bildflugnummer": "3817",
+    "bodenpixelgroesse": "20"
+   }
+  },
+  {
+   "id": "dop20rgbi_32_548_5802_2_ni_2025-03-06",
+   "bbox": [
+    9.7049642,
+    52.3659928,
+    9.7346334,
+    52.3841511
+   ],
+   "type": "Feature",
+   "assets": {
+    "preview": {
+     "href": "https://dop20-rgb.s3.eu-de.cloud-object-storage.appdomain.cloud/325485802/2025-03-06/dop20rgb_32_548_5802_2_ni_2025-03-06.tif",
+     "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+     "roles": [
+      "thumbnail"
+     ]
+    },
+    "dop20_rgb": {
+     "href": "https://dop20-rgb.s3.eu-de.cloud-object-storage.appdomain.cloud/325485802/2025-03-06/dop20rgb_32_548_5802_2_ni_2025-03-06.tif",
+     "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+     "roles": [
+      "data"
+     ]
+    },
+    "dop20_rgbi": {
+     "href": "https://dop20-rgbi.s3.eu-de.cloud-object-storage.appdomain.cloud/325485802/2025-03-06/dop20rgbi_32_548_5802_2_ni_2025-03-06.tif",
+     "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+     "roles": [
+      "data"
+     ]
+    },
+    "metadata_rgb": {
+     "href": "https://dop20-rgb.s3.eu-de.cloud-object-storage.appdomain.cloud/325485802/2025-03-06/dop20rgb_32_548_5802_2_ni_2025-03-06.xml",
+     "type": "text/plain",
+     "roles": [
+      "metadata"
+     ]
+    },
+    "metadata_rgbi": {
+     "href": "https://dop20-rgbi.s3.eu-de.cloud-object-storage.appdomain.cloud/325485802/2025-03-06/dop20rgbi_32_548_5802_2_ni_2025-03-06.xml",
+     "type": "text/plain",
+     "roles": [
+      "metadata"
+     ]
+    }
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       9.7052505,
+       52.3841511
+      ],
+      [
+       9.7049642,
+       52.3661717
+      ],
+      [
+       9.7343351,
+       52.3659928
+      ],
+      [
+       9.7346334,
+       52.3839721
+      ],
+      [
+       9.7052505,
+       52.3841511
+      ]
+     ]
+    ]
+   },
+   "collection": "DOP",
+   "properties": {
+    "camera": "Ultracam Eagle UC-EpII-1-82416042-f100",
+    "license": "CC-BY-4.0",
+    "datetime": "2025-03-06T00:00:00Z",
+    "kachelname": "dop20rgbi_32_548_5802_2_ni_2025-03-06",
+    "bildflugname": "Hannover",
+    "bezugsflaeche": "bDOM",
+    "bildflugnummer": "3817",
+    "bodenpixelgroesse": "20"
+   }
+  }
+ ],
+ "numberReturned": 3
+}
