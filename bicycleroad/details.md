@@ -24,7 +24,7 @@ add "1020-30" with a comma to the existing traffic_sign value, i.e. "DE:244.1,10
 
 "KFZ frei" should add
 "motor_vehicle=yes"
-add "KFZ frei" to the existing traffic_sign value, i.e. "DE:244.3,"KFZ frei"
+add "1022-12,1024-10" with commas to the existing traffic_sign value, i.e. "DE:244.3,1022-12,1024-10"
 traffic_sign:note="Zusatzzeichen: kombiniertes Schild aus 1024-10,1022-12 ohne eigene Nummer"
 (image: https://wiki.openstreetmap.org/w/images/c/ce/Zusatzzeichen_KFZ_frei.svg)
 

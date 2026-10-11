@@ -54,7 +54,8 @@ Additional signs then modify the base. Each appends its code to traffic_sign
 (comma-separated) and contributes override tags:
 
   Anlieger frei                  +1020-30   vehicle=destination
-  KFZ frei                       +KFZ frei  motor_vehicle=yes,
+  KFZ frei                       +1022-12,1024-10
+                                            motor_vehicle=yes,
                                             traffic_sign:note="Zusatzzeichen:
                                             kombiniertes Schild aus 1024-10,
                                             1022-12 ohne eigene Nummer"

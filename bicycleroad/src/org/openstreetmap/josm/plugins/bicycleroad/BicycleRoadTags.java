@@ -68,8 +68,8 @@ public final class BicycleRoadTags {
     public enum AdditionalSign {
         /** "Anlieger frei" (Zusatzzeichen 1020-30) — destination traffic allowed. */
         ANLIEGER_FREI("Anlieger frei", "anlieger_frei", "1020-30", Map.of("vehicle", "destination")),
-        /** "KFZ frei" — motor vehicles allowed. */
-        KFZ_FREI("KFZ frei", "kfz_frei", "KFZ frei", Map.of("motor_vehicle", "yes",
+        /** "KFZ frei" — combined pictogram sign (1022-12 + 1024-10, no own number); all motor vehicles allowed. */
+        KFZ_FREI("KFZ frei", "kfz_frei", "1022-12,1024-10", Map.of("motor_vehicle", "yes",
                 "traffic_sign:note", "Zusatzzeichen: kombiniertes Schild aus 1024-10,1022-12 ohne eigene Nummer")),
         /** "Landwirtschaftlicher Verkehr frei" (Zusatzzeichen 1026-36). */
         LANDWIRTSCHAFT("Landwirtschaftlicher Verkehr frei", "landwirtschaft", "1026-36",
