@@ -41,6 +41,7 @@ import org.openstreetmap.josm.command.ChangePropertyCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.SequenceCommand;
 import org.openstreetmap.josm.data.UndoRedoHandler;
+import org.openstreetmap.josm.data.osm.Node;
 import org.openstreetmap.josm.data.osm.OsmPrimitive;
 import org.openstreetmap.josm.data.tagging.ac.AutoCompletionItem;
 import org.openstreetmap.josm.gui.ExtendedDialog;
@@ -65,6 +66,8 @@ public class TagDialog extends ExtendedDialog {
     private static final String TAG_STREET_OR_PLACE = tr("Use tag ''addr:street'' or ''addr:place''");
 
     private static final String TAG_BUILDING = "building";
+    private static final String TAG_HOUSE = "house";
+    private static final String TAG_ENTRANCE = "entrance";
     private static final String TAG_SOURCE = "source";
     private static final String TAG_ADDR_COUNTRY = "addr:country";
     private static final String TAG_ADDR_STATE = "addr:state";
@@ -79,7 +82,9 @@ public class TagDialog extends ExtendedDialog {
         "yes", "apartments", "chapel", "church", "commercial", "dormitory", "hotel", "house", "residential", "terrace",
         "industrial", "retail", "warehouse", "cathedral", "civic", "hospital", "school", "train_station", "transportation",
         "university", "public", "bridge", "bunker", "cabin", "construction", "farm_auxiliary", "garage", "garages",
-        "greenhouse", "hangar", "hut", "roof", "shed", "stable"};
+        "greenhouse", "hangar", "hut", "roof", "shed", "stable", "detached", "semidetached_house"};
+
+    private static final String[] ENTRANCE_STRINGS = {"yes", "main", "home", "shop", "exit"};
 
     private static final int FPS_MIN = -10;
     private static final int FPS_MAX = 10;
@@ -90,6 +95,7 @@ public class TagDialog extends ExtendedDialog {
 
     private static final String TEMPLATE_DATA = "/template.data";
 
+    private AutoCompComboBox<AutoCompletionItem> house;
     private AutoCompComboBox<AutoCompletionItem> source;
     private AutoCompComboBox<AutoCompletionItem> country;
     private AutoCompComboBox<AutoCompletionItem> stateTag;
@@ -99,6 +105,8 @@ public class TagDialog extends ExtendedDialog {
     private AutoCompComboBox<AutoCompletionItem> street;
     private JTextField housenumber;
     private JCheckBox buildingEnabled;
+    private JCheckBox houseEnabled;
+    private JCheckBox entranceEnabled;
     private JCheckBox sourceEnabled;
     private JCheckBox countryEnabled;
     private JCheckBox stateEnabled;
@@ -109,6 +117,7 @@ public class TagDialog extends ExtendedDialog {
     private JCheckBox housenumberEnabled;
     private JSlider housenumberChangeSequence;
     private JComboBox<String> building;
+    private JComboBox<String> entrance;
     private JRadioButton streetRadio;
     private JRadioButton placeRadio;
     private JRadioButton incrementNumberRadio;
@@ -138,8 +147,8 @@ public class TagDialog extends ExtendedDialog {
 
         JPanel editPanel = createContentPane();
 
-        setPreferredSize(new Dimension(900, 550));
-        setMinimumSize(new Dimension(900, 550));
+        setPreferredSize(new Dimension(900, 640));
+        setMinimumSize(new Dimension(900, 640));
 
         setContent(editPanel);
         setButtonIcons("ok", "cancel");
@@ -197,6 +206,34 @@ public class TagDialog extends ExtendedDialog {
 
         editPanel.add(generateAcceptButton(actionEvent -> building.setSelectedItem(selection.get(TAG_BUILDING))), columnThree);
         editPanel.add(generateTextField(selection.get(TAG_BUILDING)), columnFour);
+
+        // house
+        houseEnabled = generateCheckbox(TAG_HOUSE, dto.isSaveHouse());
+        editPanel.add(houseEnabled, columnOne);
+
+        house = generateAutoCompTextField(acm.getTagValues(TAG_HOUSE), dto.getHouse());
+        editPanel.add(house, columnTwo);
+
+        editPanel.add(generateAcceptButton(actionEvent -> house.setSelectedItem(selection.get(TAG_HOUSE))), columnThree);
+        editPanel.add(generateTextField(selection.get(TAG_HOUSE)), columnFour);
+
+        // entrance
+        entranceEnabled = generateCheckbox(TAG_ENTRANCE, dto.isSaveEntrance());
+        editPanel.add(entranceEnabled, columnOne);
+
+        entrance = new JosmComboBox<>(ENTRANCE_STRINGS);
+        entrance.setSelectedItem(dto.getEntrance());
+        editPanel.add(entrance, columnTwo);
+
+        editPanel.add(generateAcceptButton(actionEvent -> entrance.setSelectedItem(selection.get(TAG_ENTRANCE))), columnThree);
+        editPanel.add(generateTextField(selection.get(TAG_ENTRANCE)), columnFour);
+
+        // building and house only for ways and relations, entrance only for nodes
+        boolean isNode = selection instanceof Node;
+        buildingEnabled.setEnabled(!isNode);
+        houseEnabled.setEnabled(!isNode && buildingEnabled.isSelected());
+        entranceEnabled.setEnabled(isNode);
+        buildingEnabled.addItemListener(e -> houseEnabled.setEnabled(!isNode && buildingEnabled.isSelected()));
 
         // source
         sourceEnabled = generateCheckbox(TAG_SOURCE, dto.isSaveSource());
@@ -400,6 +437,8 @@ public class TagDialog extends ExtendedDialog {
     private void acceptAllExistingValues() {
         updateStreetOrPlaceValues();
         building.setSelectedItem(selection.get(TAG_BUILDING));
+        house.setSelectedItem(selection.get(TAG_HOUSE));
+        entrance.setSelectedItem(selection.get(TAG_ENTRANCE));
         source.setSelectedItem(selection.get(TAG_SOURCE));
         country.setSelectedItem(selection.get(TAG_ADDR_COUNTRY));
         stateTag.setSelectedItem(selection.get(TAG_ADDR_STATE));
@@ -444,6 +483,8 @@ public class TagDialog extends ExtendedDialog {
         if (buttonIndex == 0) {
             Dto dto = new Dto();
             dto.setSaveBuilding(buildingEnabled.isSelected());
+            dto.setSaveHouse(houseEnabled.isSelected());
+            dto.setSaveEntrance(entranceEnabled.isSelected());
             dto.setSaveSource(sourceEnabled.isSelected());
             dto.setSaveCity(cityEnabled.isSelected());
             dto.setSaveCountry(countryEnabled.isSelected());
@@ -456,6 +497,8 @@ public class TagDialog extends ExtendedDialog {
             dto.setIncrementSuffix(incrementSuffixRadio.isSelected());
 
             dto.setBuilding((String) building.getSelectedItem());
+            dto.setHouse(getAutoCompletingComboBoxValue(house));
+            dto.setEntrance((String) entrance.getSelectedItem());
             dto.setSource(getAutoCompletingComboBoxValue(source));
             dto.setCity(getAutoCompletingComboBoxValue(city));
             dto.setCountry(getAutoCompletingComboBoxValue(country));
@@ -510,10 +553,28 @@ public class TagDialog extends ExtendedDialog {
     protected void updateJOSMSelection(OsmPrimitive selection, Dto dto) {
         List<Command> commands = new ArrayList<>();
 
-        if (dto.isSaveBuilding()) {
+        boolean isNode = selection instanceof Node;
+
+        if (dto.isSaveBuilding() && !isNode) {
             String value = selection.get(TagDialog.TAG_BUILDING);
             if (value == null || !value.equals(dto.getBuilding())) {
                 ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_BUILDING, dto.getBuilding());
+                commands.add(command);
+            }
+        }
+
+        if (dto.isSaveHouse() && dto.isSaveBuilding() && !isNode) {
+            String value = selection.get(TagDialog.TAG_HOUSE);
+            if (value == null || !value.equals(dto.getHouse())) {
+                ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_HOUSE, dto.getHouse());
+                commands.add(command);
+            }
+        }
+
+        if (dto.isSaveEntrance() && isNode) {
+            String value = selection.get(TagDialog.TAG_ENTRANCE);
+            if (value == null || !value.equals(dto.getEntrance())) {
+                ChangePropertyCommand command = new ChangePropertyCommand(selection, TagDialog.TAG_ENTRANCE, dto.getEntrance());
                 commands.add(command);
             }
         }
