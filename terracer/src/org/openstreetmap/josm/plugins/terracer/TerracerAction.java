@@ -80,7 +80,7 @@ public final class TerracerAction extends JosmAction {
      * ignored when the sides of the outline are determined and inserted into the new
      * buildings afterwards.
      */
-    private static final double CORNER_ANGLE_DEGREES = 30;
+    static final double CORNER_ANGLE_DEGREES = 30;
 
     private Collection<Command> commands;
     private Collection<OsmPrimitive> primitives;
@@ -648,7 +648,7 @@ public final class TerracerAction extends JosmAction {
      * @param c the position after the node
      * @return the change of direction at b, 0 for a straight line
      */
-    private static double turnAngle(EastNorth a, EastNorth b, EastNorth c) {
+    static double turnAngle(EastNorth a, EastNorth b, EastNorth c) {
         double dx1 = b.east() - a.east();
         double dy1 = b.north() - a.north();
         double dx2 = c.east() - b.east();
