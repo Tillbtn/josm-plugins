@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +27,13 @@ import javax.swing.JOptionPane;
 import org.openstreetmap.josm.actions.JosmAction;
 import org.openstreetmap.josm.command.AddCommand;
 import org.openstreetmap.josm.command.ChangeCommand;
+import org.openstreetmap.josm.command.ChangeNodesCommand;
 import org.openstreetmap.josm.command.ChangePropertyCommand;
 import org.openstreetmap.josm.command.Command;
 import org.openstreetmap.josm.command.DeleteCommand;
 import org.openstreetmap.josm.command.SequenceCommand;
 import org.openstreetmap.josm.data.UndoRedoHandler;
+import org.openstreetmap.josm.data.coor.EastNorth;
 import org.openstreetmap.josm.data.coor.ILatLon;
 import org.openstreetmap.josm.data.osm.DataSet;
 import org.openstreetmap.josm.data.osm.Node;
@@ -39,9 +43,12 @@ import org.openstreetmap.josm.data.osm.RelationMember;
 import org.openstreetmap.josm.data.osm.Tag;
 import org.openstreetmap.josm.data.osm.TagCollection;
 import org.openstreetmap.josm.data.osm.Way;
+import org.openstreetmap.josm.data.projection.Projection;
+import org.openstreetmap.josm.data.projection.ProjectionRegistry;
 import org.openstreetmap.josm.gui.ExtendedDialog;
 import org.openstreetmap.josm.gui.MainApplication;
 import org.openstreetmap.josm.gui.conflict.tags.CombinePrimitiveResolverDialog;
+import org.openstreetmap.josm.tools.Geometry;
 import org.openstreetmap.josm.tools.Logging;
 import org.openstreetmap.josm.tools.Pair;
 import org.openstreetmap.josm.tools.Shortcut;
@@ -65,6 +72,15 @@ public final class TerracerAction extends JosmAction {
     private static final String BUILDING = "building";
     private static final String ADDR_HOUSENUMBER = "addr:housenumber";
     private static final String ADDR_STREET = "addr:street";
+
+    /**
+     * Minimum change of direction (in degrees) at a node of the outline to be treated as a
+     * corner. Nodes carrying tags or belonging to other ways (entrances, footway junctions)
+     * with a smaller change of direction are treated as lying on a straight wall: they are
+     * ignored when the sides of the outline are determined and inserted into the new
+     * buildings afterwards.
+     */
+    private static final double CORNER_ANGLE_DEGREES = 30;
 
     private Collection<Command> commands;
     private Collection<OsmPrimitive> primitives;
@@ -326,8 +342,13 @@ public final class TerracerAction extends JosmAction {
             nb = housenumbers.size();
         }
 
-        // now find which is the longest side connecting the first node
-        Pair<Way, Way> interp = findFrontAndBack(outline, invertSide);
+        // Nodes of the outline carrying information (tags or other ways), e.g. entrances or
+        // junctions of footways. They must survive and end up in the new buildings.
+        final List<Node> featureNodes = findFeatureNodes(outline);
+
+        // now find which is the longest side connecting the first node, ignoring feature
+        // nodes lying on a straight wall
+        Pair<Way, Way> interp = findFrontAndBack(simplifiedOutline(outline, featureNodes), invertSide);
 
         final boolean swap = init != null && (init.equals(interp.a.lastNode()) || init.equals(interp.b.lastNode()));
 
@@ -347,26 +368,38 @@ public final class TerracerAction extends JosmAction {
         DataSet ds = getLayerManager().getEditDataSet();
 
         if (nb > 1) {
+            // ways sharing nodes with the outline, e.g. adjacent buildings
+            final Collection<Way> neighbours = findNeighbours(outline);
+            // existing nodes a new node may coincide with
+            final Set<Node> existingNodes = new LinkedHashSet<>(featureNodes);
+            for (Way w : neighbours) {
+                existingNodes.addAll(w.getNodes());
+            }
+
             // add required new nodes and build list of nodes to reuse
             for (int i = 0; i <= nb; ++i) {
                 int iDir = swap ? nb - i : i;
                 newNodes[0][i] = interpolateAlong(interp.a, frontLength * iDir / nb);
                 newNodes[1][i] = interpolateAlong(interp.b, backLength * iDir / nb);
-                if (!outline.containsNode(newNodes[0][i]))
-                    this.commands.add(new AddCommand(ds, newNodes[0][i]));
-                else
-                    reusedNodes.add(newNodes[0][i]);
-                if (!outline.containsNode(newNodes[1][i]))
-                    this.commands.add(new AddCommand(ds, newNodes[1][i]));
-                else
-                    reusedNodes.add(newNodes[1][i]);
+                for (int side = 0; side < 2; side++) {
+                    // reuse an existing node at the same position instead of creating a duplicate
+                    final Node n = existingNodeAt(newNodes[side][i], existingNodes);
+                    newNodes[side][i] = n;
+                    if (n.getDataSet() == null)
+                        this.commands.add(new AddCommand(ds, n));
+                    else if (outline.containsNode(n))
+                        reusedNodes.add(n);
+                }
             }
 
+            // new nodes lying exactly on a neighbouring way are inserted into that way as well
+            connectToNeighbours(newNodes, neighbours);
+
             // assemble new quadrilateral, closed ways
+            final List<Way> terraces = new ArrayList<>(nb);
             for (int i = 0; i < nb; ++i) {
                 final Way terr;
-                boolean createNewWay = i > 0 || keepOutline;
-                if (createNewWay) {
+                if (i > 0 || keepOutline) {
                     terr = new Way();
                     // add the tags of the outline to each building (e.g. source=*)
                     TagCollection.from(outline).applyTo(terr);
@@ -380,6 +413,15 @@ public final class TerracerAction extends JosmAction {
                 terr.addNode(newNodes[1][i + 1]);
                 terr.addNode(newNodes[1][i]);
                 terr.addNode(newNodes[0][i]);
+                terraces.add(terr);
+            }
+
+            // put entrances etc. back onto the wall of the building they belong to
+            insertFeatureNodes(terraces, featureNodes, reusedNodes);
+
+            for (int i = 0; i < nb; ++i) {
+                final Way terr = terraces.get(i);
+                boolean createNewWay = i > 0 || keepOutline;
 
                 addressBuilding(terr, street, streetName, associatedStreet, housenumbers, i,
                         from != null ? Integer.toString(from + i * step) : null, buildingValue);
@@ -546,6 +588,173 @@ public final class TerracerAction extends JosmAction {
         if (!tags.isEmpty()) {
             commands.add(new ChangePropertyCommand(getLayerManager().getEditDataSet(), Collections.singleton(outline), tags));
         }
+    }
+
+    /**
+     * Collects the nodes of the outline that must survive terracing because they carry tags
+     * or belong to other ways as well (entrances, junctions of footways, ...).
+     *
+     * @param outline the closed outline
+     * @return the feature nodes in the order of the outline
+     */
+    private static List<Node> findFeatureNodes(Way outline) {
+        List<Node> result = new ArrayList<>();
+        for (int i = 0; i < outline.getNodesCount() - 1; i++) {
+            Node n = outline.getNode(i);
+            if (n.hasKeys() || n.getReferrers().size() > 1) {
+                result.add(n);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a copy of the outline without the feature nodes lying on a straight wall, so that
+     * entrances etc. neither disturb the detection of the sides nor end up as corners of the
+     * new buildings. Falls back to the outline itself if nothing is removed or if fewer than
+     * four corners would remain.
+     *
+     * @param outline the closed outline
+     * @param featureNodes the feature nodes of the outline, see {@link #findFeatureNodes}
+     * @return the simplified closed outline
+     */
+    private static Way simplifiedOutline(Way outline, Collection<Node> featureNodes) {
+        final int count = outline.getNodesCount() - 1;
+        final List<Node> nodes = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            Node n = outline.getNode(i);
+            if (featureNodes.contains(n)) {
+                EastNorth prev = outline.getNode((i - 1 + count) % count).getEastNorth();
+                EastNorth next = outline.getNode((i + 1) % count).getEastNorth();
+                if (turnAngle(prev, n.getEastNorth(), next) < Math.toRadians(CORNER_ANGLE_DEGREES)) {
+                    continue;
+                }
+            }
+            nodes.add(n);
+        }
+        if (nodes.size() < 4 || nodes.size() == count)
+            return outline;
+        Way shape = new Way();
+        shape.setNodes(nodes);
+        shape.addNode(nodes.get(0));
+        return shape;
+    }
+
+    /**
+     * Returns the absolute change of direction (in radians, 0..pi) at node b of the path a-b-c.
+     */
+    private static double turnAngle(EastNorth a, EastNorth b, EastNorth c) {
+        double dx1 = b.east() - a.east();
+        double dy1 = b.north() - a.north();
+        double dx2 = c.east() - b.east();
+        double dy2 = c.north() - b.north();
+        return Math.abs(Math.atan2(dx1 * dy2 - dy1 * dx2, dx1 * dx2 + dy1 * dy2));
+    }
+
+    /**
+     * If a newly interpolated node coincides with an existing node, the existing node is used
+     * instead so that no duplicate node is created next to it.
+     *
+     * @param interpolated the interpolated node, possibly already an existing node of the outline
+     * @param candidates the existing nodes to check
+     * @return the existing node at the same position, or {@code interpolated} if there is none
+     */
+    private static Node existingNodeAt(Node interpolated, Collection<Node> candidates) {
+        if (interpolated.getDataSet() != null)
+            return interpolated;
+        for (Node n : candidates) {
+            if (n.equalsEpsilon(interpolated, ILatLon.MAX_SERVER_PRECISION))
+                return n;
+        }
+        return interpolated;
+    }
+
+    /**
+     * Inserts the feature nodes of the outline into the new buildings, each into the segment
+     * nearest to it. As every node is inserted right away, several nodes on one wall end up
+     * in the right order.
+     *
+     * @param terraces the new closed ways
+     * @param featureNodes the feature nodes of the outline
+     * @param reusedNodes outline nodes already used as corners of the new ways
+     */
+    private static void insertFeatureNodes(List<Way> terraces, Collection<Node> featureNodes, Collection<Node> reusedNodes) {
+        for (Node n : featureNodes) {
+            if (reusedNodes.contains(n))
+                continue;
+            final EastNorth p = n.getEastNorth();
+            Way bestWay = null;
+            int bestIndex = -1;
+            double bestDistance = Double.MAX_VALUE;
+            for (Way w : terraces) {
+                for (int i = 0; i < w.getNodesCount() - 1; i++) {
+                    EastNorth a = w.getNode(i).getEastNorth();
+                    EastNorth b = w.getNode(i + 1).getEastNorth();
+                    double distance = Geometry.closestPointToSegment(a, b, p).distanceSq(p);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        bestWay = w;
+                        bestIndex = i + 1;
+                    }
+                }
+            }
+            if (bestWay != null)
+                bestWay.addNode(bestIndex, n);
+        }
+    }
+
+    /**
+     * Finds the ways sharing at least one node with the outline, e.g. adjacent buildings.
+     *
+     * @param outline the closed outline
+     * @return the neighbouring ways, without the outline itself
+     */
+    private static Collection<Way> findNeighbours(Way outline) {
+        final Set<Way> neighbours = new LinkedHashSet<>();
+        for (Node n : outline.getNodes()) {
+            for (OsmPrimitive p : n.getReferrers()) {
+                if (p instanceof Way && p != outline && !p.isDeleted()) {
+                    neighbours.add((Way) p);
+                }
+            }
+        }
+        return neighbours;
+    }
+
+    /**
+     * Inserts the new nodes lying exactly on a segment of a neighbouring way into that way,
+     * so that e.g. an adjacent building sharing a wall with the outline stays connected to
+     * the new buildings. As every node is inserted right away, several nodes on one segment
+     * end up in the right order.
+     *
+     * @param newNodes the new nodes of the terrace (front and back)
+     * @param neighbours the neighbouring ways, see {@link #findNeighbours}
+     */
+    private void connectToNeighbours(Node[][] newNodes, Collection<Way> neighbours) {
+        final Projection projection = ProjectionRegistry.getProjection();
+        // neighbouring way -> its nodes including the inserted ones
+        final Map<Way, List<Node>> changedWays = new LinkedHashMap<>();
+        for (Node[] side : newNodes) {
+            for (Node n : side) {
+                if (n.getDataSet() != null)
+                    continue; // existing node, already connected
+                final EastNorth p = n.getEastNorth();
+                for (Way w : neighbours) {
+                    final List<Node> nodes = changedWays.getOrDefault(w, new ArrayList<>(w.getNodes()));
+                    for (int i = 0; i < nodes.size() - 1; i++) {
+                        EastNorth a = nodes.get(i).getEastNorth();
+                        EastNorth b = nodes.get(i + 1).getEastNorth();
+                        EastNorth closest = Geometry.closestPointToSegment(a, b, p);
+                        if (projection.eastNorth2latlon(closest).equalsEpsilon(n, ILatLon.MAX_SERVER_PRECISION)) {
+                            nodes.add(i + 1, n);
+                            changedWays.put(w, nodes);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        changedWays.forEach((w, nodes) -> this.commands.add(new ChangeNodesCommand(w, nodes)));
     }
 
     /**
